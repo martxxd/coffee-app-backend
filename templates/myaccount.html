@@ -1,0 +1,177 @@
+    {% extends "master.html" %}
+    {% block body %}
+    <section class="full-height-section" style="background-color: black">
+      <div class="container" data-aos="fade-up">
+        <div class="section-title">
+          <p style="color:white">Profile Details</p>
+        </div>
+        <div class="row content">
+         <div class="col-lg-6">
+          <!-- First Row: Circular Image -->
+
+          <div class="col-lg-12 d-flex align-items-center justify-content-center">
+            <img src="{{ url_for('static', filename='assets/img/5572513-200.png') }}" alt="Profile Image" class="rounded-circle" width="100" height="100" style="background-color: white">
+          </div>
+          <form action="#" id="myForm" >
+  
+            <!-- Second Row: Input Boxes -->
+            <div class="row mt-4">
+              <div class="col-lg-12">
+                <label for="fullname" class="form-label" style="color:white">Fullname:</label>
+                <input type="text" id="fullname" class="form-control" value="{{ userDatas[0].fullname }}" readonly>
+              </div>
+              <div class="col-lg-12 mt-3">
+                <label for="phone" class="form-label" style="color:white">Email:</label>
+                <input type="email" id="email" class="form-control" value="{{ userDatas[0].email }}" readonly>
+
+              </div>
+              <div class="col-lg-12">
+                <label for="gender" class="form-label" style="color:white">Gender:</label>
+                <select id="gender" class="form-select" disabled>
+                  <option value="Male" {% if userDatas[0].gender == 'Male' %} selected {% endif %}>Male</option>
+                  <option value="Female" {% if userDatas[0].gender == 'Female' %} selected {% endif %}>Female</option>
+                </select>
+              </div>
+
+            </div>
+
+
+          </div>
+          <div class="col-lg-6">
+            <!-- Existing content -->
+            <!-- ... -->
+
+            <!-- Toggle unlock -->
+            <div style="text-align: right">
+            <p id="toggleUnlock" class="text-primary" style="position: relative;">Edit Account</p>
+</div>
+
+            <!-- Rest of the content -->
+            <!-- ... -->
+
+    <div class="col-lg-12 mt-3">
+                <label for="phone" class="form-label" style="color:white">Phone Number:</label>
+                <input type="number" id="phone" class="form-control" value="{{ userDatas[0].phoneNumber }}" readonly>
+
+              </div>
+
+
+            <!-- City input -->
+            <div class="mt-4">
+              <label for="city" class="form-label" style="color:white">City:</label>
+              <input type="text" id="city" class="form-control" value="{% if userDatas[0].city %}{{ userDatas[0].city }}{% else %}{% endif %}" readonly>
+            </div>
+
+            <!-- Address textarea -->
+            <div class="mt-3">
+              <label for="address" class="form-label" style="color:white">Address:</label>
+              <textarea style="resize: none;" id="address" class="form-control" rows="4" readonly>{% if userDatas[0].streetOrHouseNumber %}{{ userDatas[0].streetOrHouseNumber }}{% else %}{% endif %}</textarea>
+
+            </div>
+
+            <!-- Save button centered (initially hidden) -->
+            <div class="text-center mt-3" id="saveBtnContainer" style="display: none;">
+              <button type="submit"  class="btn btn-primary">Update Information</button>
+            </div>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </section><!-- End About Section -->
+
+
+
+
+
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const toggleUnlock = document.getElementById("toggleUnlock");
+      const cityInput = document.getElementById("city");
+      const addressTextarea = document.getElementById("address");
+      const fullnameInput = document.getElementById("fullname");
+      const phoneinput = document.getElementById("phone");
+      const genderInput = document.getElementById("gender");
+
+      const saveBtnContainer = document.getElementById("saveBtnContainer");
+      const saveBtn = document.getElementById("saveBtn");
+
+      let isEditable = false;
+
+      toggleUnlock.addEventListener("click", function() {
+        const inputsToToggle = [cityInput, addressTextarea, fullnameInput, phoneinput, genderInput];
+
+        if (isEditable) {
+        // Lock all fields
+        inputsToToggle.forEach(input => {
+          input.setAttribute("readonly", "true");
+          input.setAttribute("disabled", "true"); // Disable the gender input as well
+        });
+
+        saveBtnContainer.style.display = "none";
+        toggleUnlock.textContent = "Click here to Edit";
+      } else {
+        // Unlock all fields
+        inputsToToggle.forEach(input => {
+          input.removeAttribute("readonly");
+          input.removeAttribute("disabled"); // Enable the gender input
+        });
+
+        saveBtnContainer.style.display = ""; // Show the Save button container
+        toggleUnlock.textContent = "Click here to lock";
+      }
+      isEditable = !isEditable; // Toggle state
+    });
+    });
+  </script>
+
+
+  <script type="text/javascript">
+    document.getElementById('myForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+
+
+        const fullname = document.getElementById('fullname').value;
+        const email = document.getElementById('email').value;
+        const gender = document.getElementById('gender').value;
+        const phoneNumber = document.getElementById('phone').value;
+        const city = document.getElementById('city').value;
+        const streetOrHouseNumber = document.getElementById('address').value;
+
+
+
+        $.ajax({
+          url: '/update_user',
+          type: 'POST',
+          data: {
+          
+            'fullname': fullname,
+            'email': email,
+            'gender': gender,
+            'phoneNumber': phoneNumber,
+            'city': city,
+            'streetOrHouseNumber': streetOrHouseNumber
+          },
+          dataType: 'json',
+          success: function(data) {
+
+    if (data === 1) {
+            location.reload();
+          } else {
+            alert("Error");
+          }
+
+              }
+            });
+      });
+
+    
+    </script>
+
+
+
+
+
+
+    {% endblock %}

@@ -1,0 +1,294 @@
+    {% extends "master.html" %}
+    {% block body %}
+    <style type="text/css">
+      /* Style for chat container */
+      .chat-container {
+        max-width: 400px;
+        margin: 20px auto;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 10px;
+      }
+      /* Style for chat messages */
+      .chat-messages {
+        max-height: 300px;
+        overflow-y: auto;
+      }
+      /* Style for chat bubbles */
+      .chat-bubble {
+        background-color: #f0f0f0;
+        border-radius: 10px;
+        padding: 8px;
+        margin: 5px 0;
+        word-wrap: break-word;
+      }
+      /* Style for chat input container */
+      .chat-input-container {
+        display: flex;
+        align-items: center;
+      }
+      /* Style for chat input */
+      .chat-input {
+        flex-grow: 1;
+        margin-right: 10px;
+        resize: none;
+      }
+      .image-container {
+        position: relative;
+        display: inline-block;
+      }
+      .color-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 0, 0, 0.5); /* Adjust the color and opacity here */
+        border-radius: 15px; /* Add your border radius */
+      }
+    </style>
+    <style type="text/css">
+      th {
+        color: black;
+        font-family: Arial;
+        font-weight: bold;
+        width: 50%; /* Equal width for each header cell */
+      }
+      td {
+        color: black;
+        font-size: 15px;
+        font-family: Arial;
+      }
+      #rider {
+        position: absolute;
+        top: 0;
+        left: 0;
+        margin: 0;
+        padding: 0;
+        z-index: 1; /* Ensure images stay in front */
+      }
+    </style>
+    <section class="full-height-section" style="background-color: black;margin-bottom: 50px">
+      <div class="container" data-aos="fade-up" style="margin: 0;padding: 0 " > 
+       <img src="{{ url_for('static', filename='assets/img/location.png')}}" id="map" alt="Map">
+       <img src="{{ url_for('static', filename='assets/img/motorRiderIcon.png')}}" id="rider" alt="Rider" width="3%">
+       <div class="row mt-3" >
+        <div class="col-lg-4" onclick="openChatModal()">
+          <!-- Button trigger modal -->
+          <div class="row justify-content-center align-items-center" style="background-color: transparent; border-radius: 15px; border: 2px solid white;  cursor: pointer;"
+          onmouseover="this.style.border='2px solid blue';"
+          onmouseout="this.style.border='2px solid white';"
+          >
+          <div class="col-lg-4 text-center">
+            <img src="{{ url_for('static',filename='assets/img/deliveryRiderIcon.png')}}" alt="">
+          </div>
+          <div class="col-lg-4 text-center">
+            <p style="color: white; font-family: Arial; font-weight: bold; margin-bottom: 0px;">Manong Driver</p>
+            <p style="color: white; font-size: 10px; font-family: Arial; margin-bottom: 0px;">Delivery Driver</p>
+          </div>
+          <div class="col-lg-4 text-center">
+            <img src="{{ url_for('static',filename='assets/img/conversation.png')}}" alt="" style="color: red;">
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div style="text-align: center;">
+          <p id="timerText" style="color: white;font-size: 13px;font-family: arial; font-weight: bold; margin-bottom: 0px">Delivery rider pick up your coffee and its on the way</p>
+        </div>
+        <p id="timer" style="color: white; font-size: 18px; font-family: arial; font-weight: bold; text-align: center; margin-top: 0px;padding-bottom: 0px">10 min(s) left</p>
+        <div class="progress" style="width: 100%; height: 20px; background-color: #ddd;">
+          <div id="progressBar" class="progress-bar" role="progressbar" style="width: 100%; background-color: white;"></div>
+        </div>
+      </div>
+      <div class="col-lg-4" onclick="openresiboModal()">
+        <div class="row justify-content-center align-items-center" style="background-color: transparent; border-radius: 15px; border: 2px solid white;  cursor: pointer;"
+        onmouseover="this.style.border='2px solid blue';"
+        onmouseout="this.style.border='2px solid white';"
+        >
+        <div class="col-lg-4 text-center">
+          <p style="color: white; font-family: Arial; font-weight: bold; margin-bottom: 0px;">Recipt</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</section>
+<!-- Modal -->
+<div class="modal fade" id="chatModal" tabindex="-1" role="dialog" aria-labelledby="chatModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="chatModalLabel">Chat Box</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true" onclick="closeChatModal()">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Chatbox content -->
+        <div id="chatMessages" class="chat-messages">
+          <!-- Chat messages go here -->
+        </div>
+        <textarea id="messageInput" placeholder="Type your message" class="form-control chat-input"></textarea>
+        <button onclick="sendMessage()" class="btn btn-primary mt-2">Send</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Modal Resibbo -->
+<div class="modal fade" id="resiboModal" tabindex="-1" role="dialog" aria-labelledby="chatModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="chatModalLabel">Reciept</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true" onclick="closeresiboModal()">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <table id="cartTable">
+          <thead>
+            <tr>
+              <th colspan="3"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for name, item_details in cartData.items() %}
+            <tr>
+              <td>{{ item_details.quantity }}x</td>
+              <td>{{ name }}</td>
+              <td >₱{{ item_details.total_price }}</td>
+            </tr>
+            {% endfor %}
+            <tr class="total-row">
+              <td colspan="2" style="border-top: 3px solid black;"></td>
+              <td  id="totalPrice" style="border-top: 3px solid black; ">₱{{ total_price }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const cartTable = document.getElementById('cartTable');
+    const totalRow = cartTable.querySelector('.total-row');
+    let totalPrice = 0;
+    const priceCells = cartTable.querySelectorAll('tbody td:nth-child(3)'); // Select all cells with prices
+    priceCells.forEach(cell => {
+      const priceText = cell.textContent.trim(); // Remove leading/trailing whitespace
+      const price = parseFloat(priceText.substring(1)); // Remove the currency symbol '₱' before parsing
+      totalPrice += price;
+    });
+    // Update the total price in the table
+    totalRow.querySelector('#totalPrice').textContent = `₱${totalPrice.toFixed(2)}`;
+  });
+</script>
+<script>
+  function sendMessage() {
+    const messageInput = document.getElementById('messageInput');
+    const chatMessages = document.getElementById('chatMessages');
+    const userMessage = messageInput.value;
+    if (userMessage.trim() !== '') {
+      const userBubble = document.createElement('div');
+      userBubble.classList.add('chat-bubble');
+      userBubble.textContent = `You: ${userMessage}`;
+      chatMessages.appendChild(userBubble);
+    // Simulate reply from coffee delivery system after a brief delay
+    setTimeout(() => {
+      const systemReply = document.createElement('div');
+      systemReply.classList.add('chat-bubble');
+      systemReply.textContent = `Coffee Delivery: Your coffee is on the way!`;
+      chatMessages.appendChild(systemReply);
+    }, 1000); // Simulating a 1-second delay for the system response
+    // Clear input field after sending message
+    messageInput.value = '';
+  }
+}
+function generateReply(message) {
+  const replies = [
+  "Sorry, I'm just a coffee delivery bot! ☕️",
+  "I'm on my way to deliver your coffee!",
+  "Do you take your coffee with a side of jokes? 🤖",
+  "Coffee delivery, not stand-up comedy! 😄",
+  "I wish I could make your coffee talk, but I can only deliver it! 🤷‍♂️",
+  "A robot's favorite drink? Data-ccino! 😉",
+  ];
+    // Return a random reply from the array
+    return replies[Math.floor(Math.random() * replies.length)];
+  }
+</script>
+<script type="text/javascript">
+  function openChatModal() {
+    $('#chatModal').modal('show');
+  }
+  function closeChatModal() {
+    $('#chatModal').modal('hide');
+  }
+  function openresiboModal() {
+    $('#resiboModal').modal('show');
+  }
+  function closeresiboModal() {
+    $('#resiboModal').modal('hide');
+  }
+</script>
+<script type="text/javascript">
+  let timeLeft = 10 * 60;
+  function updateTimer() {
+    const timerElement = document.getElementById('timer');
+    const progressBar = document.getElementById('progressBar');
+    const minutes = Math.floor(timeLeft / 60); // Calculate remaining minutes
+    timerElement.textContent = `${minutes} min(s) left`;
+    const progressPercent = ((10 * 60 - timeLeft) / (10 * 60)) * 100; // Calculate progress percentage
+    progressBar.style.width = `${progressPercent}%`;
+    progressBar.style.backgroundColor = `rgb(${255 - (progressPercent * 255) / 100}, 255, ${255 - (progressPercent * 255) / 100})`;
+    if (timeLeft > 0) {
+      timeLeft -= 60; // Subtract 1 second
+      if (timeLeft % 60 === 0) {
+        timeLeft -= 60; // Subtract an additional 60 seconds every minute
+      }
+    } else {
+      clearInterval(timerInterval);
+      timerElement.textContent = 'Any minute now !!';
+      $.ajax({
+        url: '/delivered',
+        type: 'POST',
+        data: {
+          'id': 'id',
+        },
+        dataType: 'json',
+        success: function(data) {
+  window.location.href = '/';
+}
+});
+    }
+  }
+  const timerInterval = setInterval(updateTimer, 1000);
+</script>
+<script type="text/javascript">
+  let rider = document.getElementById('rider');
+  let map = document.getElementById('map');
+// Get the initial position at the center of the map
+let xPos = (map.clientWidth - rider.width) / 2;
+let yPos = (map.clientHeight - rider.height) / 2;
+let xDirection = 1;
+let yDirection = 1;
+function moveRider() {
+  rider.style.left = xPos + 'px';
+  rider.style.top = yPos + 'px';
+  // Change the position
+  xPos += xDirection;
+  yPos += yDirection;
+  // Change direction when reaching edges
+  if (xPos >= map.clientWidth - rider.width || xPos <= 0) {
+    xDirection = -xDirection;
+  }
+  if (yPos >= map.clientHeight - rider.height || yPos <= 0) {
+    yDirection = -yDirection;
+  }
+}
+// Move the rider every 500 milliseconds
+setInterval(moveRider, 10);
+</script>
+{% endblock %}

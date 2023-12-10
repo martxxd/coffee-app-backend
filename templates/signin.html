@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Starbs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=ABeeZee&amp;family=Allan&amp;family=Inter&amp;family=Lato:wght@400;700;900&amp;family=Vujahday+Script&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+  <link rel="stylesheet" href="{{ url_for('static',filename='sinout/style.css')}}">
+  <!-- Bootstrap CSS -->
+  <!--   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"> -->
+  <style type="text/css">
+   .modal-open{overflow:hidden}
+   .modal-open .modal{overflow-x:hidden;overflow-y:auto}
+   .modal{position:fixed;top:0;left:0;z-index:1050;display:none;width:100%;height:100%;overflow:hidden;outline:0}
+   .modal-dialog{position:relative;width:auto;margin:.5rem;pointer-events:none}
+   .modal.fade .modal-dialog{transition:-webkit-transform .3s ease-out;transition:transform .3s ease-out;transition:transform .3s ease-out,-webkit-transform .3s ease-out;-webkit-transform:translate(0,-50px);transform:translate(0,-50px)}
+   @media (prefers-reduced-motion:reduce){.modal.fade .modal-dialog{transition:none}
+ }
+ .modal.show .modal-dialog{-webkit-transform:none;transform:none}
+ .modal.modal-static .modal-dialog{-webkit-transform:scale(1.02);transform:scale(1.02)}
+ .modal-dialog-scrollable{display:-ms-flexbox;display:flex;max-height:calc(100% - 1rem)}
+ .modal-dialog-scrollable .modal-content{max-height:calc(100vh - 1rem);overflow:hidden}
+ .modal-dialog-scrollable .modal-footer,.modal-dialog-scrollable .modal-header{-ms-flex-negative:0;flex-shrink:0}
+ .modal-dialog-scrollable .modal-body{overflow-y:auto}
+ .modal-dialog-centered{display:-ms-flexbox;display:flex;-ms-flex-align:center;align-items:center;min-height:calc(100% - 1rem)}
+ .modal-dialog-centered::before{display:block;height:calc(100vh - 1rem);height:-webkit-min-content;height:-moz-min-content;height:min-content;content:""}
+ .modal-dialog-centered.modal-dialog-scrollable{-ms-flex-direction:column;flex-direction:column;-ms-flex-pack:center;justify-content:center;height:100%}
+ .modal-dialog-centered.modal-dialog-scrollable .modal-content{max-height:none}
+ .modal-dialog-centered.modal-dialog-scrollable::before{content:none}
+ .modal-content{position:relative;display:-ms-flexbox;display:flex;-ms-flex-direction:column;flex-direction:column;width:100%;pointer-events:auto;background-color:#fff;background-clip:padding-box;border:1px solid rgba(0,0,0,.2);border-radius:.3rem;outline:0}
+ .modal-backdrop{position:fixed;top:0;left:0;z-index:1040;width:100vw;height:100vh;background-color:#000}
+ .modal-backdrop.fade{opacity:0}
+ .modal-backdrop.show{opacity:.5}
+ .modal-header{display:-ms-flexbox;display:flex;-ms-flex-align:start;align-items:flex-start;-ms-flex-pack:justify;justify-content:space-between;padding:1rem 1rem;border-bottom:1px solid #dee2e6;border-top-left-radius:calc(.3rem - 1px);border-top-right-radius:calc(.3rem - 1px)}
+ .modal-header .close{padding:1rem 1rem;margin:-1rem -1rem -1rem auto}
+ .modal-title{margin-bottom:0;line-height:1.5}
+ .modal-body{position:relative;-ms-flex:1 1 auto;flex:1 1 auto;padding:1rem}
+ .modal-footer{display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap;-ms-flex-align:center;align-items:center;-ms-flex-pack:end;justify-content:flex-end;padding:.75rem;border-top:1px solid #dee2e6;border-bottom-right-radius:calc(.3rem - 1px);border-bottom-left-radius:calc(.3rem - 1px)}
+ .modal-footer>*{margin:.25rem}
+ .modal-scrollbar-measure{position:absolute;top:-9999px;width:50px;height:50px;overflow:scroll}
+ @media (min-width:576px){.modal-dialog{max-width:500px;margin:1.75rem auto}
+ .modal-dialog-scrollable{max-height:calc(100% - 3.5rem)}
+ .modal-dialog-scrollable .modal-content{max-height:calc(100vh - 3.5rem)}
+ .modal-dialog-centered{min-height:calc(100% - 3.5rem)}
+ .modal-dialog-centered::before{height:calc(100vh - 3.5rem);height:-webkit-min-content;height:-moz-min-content;height:min-content}
+ .modal-sm{max-width:300px}
+}
+@media (min-width:992px){.modal-lg,.modal-xl{max-width:800px}
+}
+@media (min-width:1200px){.modal-xl{max-width:1140px}
+}
+</style>
+<style type="text/css">
+  @keyframes rotate {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+</style>
+</head>
+<body>
+  <!-- partial:index.partial.html -->
+  <div class="container right-panel-active">
+    <!-- Sign In -->
+    <div class="container__form container--signup">
+      <a href="{{ url_for('home') }}" class="logback" >  <span class="back-icon">⟵</span>  Back</a>
+      <div style="width: 70%; display: flex; justify-content: center; margin-top: 10%;margin-left: 20%">
+        <form action="#" class="form" id="myForm" style="align-items: flex-start;">
+         <h1 style="font-size: 30px; font-weight: bold; margin-bottom: 0;">Account Login</h1>
+         <p style="margin-top: 0;text-align: left;">If you are already a member you can login with your email address and password.</p>
+         <!-- Input fields -->
+         <label for="email">Email address</label>
+         <input type="email" id="email" name="email" required class="input">
+         <label for="password">Password</label>
+         <input type="password" id="password" name="password" required class="input">
+         <div class="remember-me">
+          <input type="checkbox" id="remember">
+          <label for="remember">Remember me</label>
+        </div>
+        <button type="submit">Login</button>
+        <p class="signup-text">
+          Don't have an account? <a href="{{ url_for('signup') }}" class="signup-link">Sign up here</a>
+        </p>
+      </form>
+    </div>
+  </div>
+  <!-- Overlay -->
+  <div class="container__overlay">
+    <div class="overlay">
+      <a href="/" class="loginstarbs">Starbs</a>
+      <div class="overlay__panel gif-container overlay__panel overlay--left">
+        <img src="{{ url_for('static',filename='assets/img/coffeeCup.gif')}}" alt="" style="height: 650px; width: 500px;">
+      </div>
+    </div>
+  </div>
+</div>
+<!-- partial -->
+<!-- Jquery JS-->
+<!-- Modal -->
+<div class="modal fade" id="loadingModal" tabindex="-1" role="dialog" aria-labelledby="chatModalLabel" aria-hidden="true">
+  <div class="modal-dialog-centered" role="document">
+    <div class="modal-content" style="background-color: transparent; border: none;">
+      <div class="modal-body" style="text-align: center;">
+        <img src="{{ url_for('static',filename='assets/img/loader.png')}}" alt="" style="height: 200px; width: 200px; animation: rotate 2s linear infinite;">
+      </div>
+    </div>
+  </div>
+</div>
+<script src="{{ url_for('static',filename='vendor/jquery/jquery.min.js')}}"></script>
+<script  src="{{ url_for('static',filename='sinout/script.js')}}"></script>
+<script>
+  document.getElementById('myForm').addEventListener('submit', function(event) {
+    event.preventDefault(); 
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    $('#loadingModal').modal('show');
+    $.ajax({
+      url: '/login',
+      type: 'POST',
+      data: {
+        'email': email,
+        'password': password,
+      },
+      dataType: 'json',
+      success: function(data) {
+        if (data === 1) {
+          changeImageAfterDelay();
+        } else {
+          alert("Invalid Credentials");
+        }
+      }
+    });
+  });
+</script>
+<script type="text/javascript">
+  function delay(milliseconds) {
+    return new Promise(function (resolve) {
+      setTimeout(resolve, milliseconds);
+    });
+  }
+</script>
+<script type="text/javascript">
+  function changeImageAfterDelay() {
+    var image = document.querySelector('#loadingModal img');
+    delay(3000).then(function () {
+      image.style.animation = 'none';
+      image.setAttribute('src', '{{ url_for('static',filename='assets/img/success.gif')}}');
+    }).then(function(){
+     delay(3000).then(function(){
+       window.location.href = '/';
+     });
+   });
+  }
+</script>
+<!-- Bootstrap JS and jQuery -->
+<!-- <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script> -->
+<script src="{{ url_for('static',filename='vendor/jquery/jquery.min.js')}}"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Gcash Payment</title>
+	<style>
+	body {
+		background-color: white;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 100vh;
+		margin: 0;
+		font-family: Arial, sans-serif;
+	}
+	.container {
+		text-align: center;
+	}
+	img {
+		width: 200px; /* Adjust image size as needed */
+		height: auto;
+	}
+	form {
+		margin-top: 20px;
+	}
+	input[type="tel"] {
+		padding: 8px;
+		font-size: 16px;
+	}
+	input[type="submit"] {
+		padding: 10px 20px;
+		font-size: 18px;
+		cursor: pointer;
+	}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<img src="{{ url_for('static', filename='assets/img/gcash-logo-vector.png')}}" alt="GCash"  >
+		<form action="/confirm" method="get">
+			<label for="phone">Phone Number (starting with +639):</label><br>
+			<input type="tel" id="phone" name="phone" pattern="^\+639\d{9}$" required><br><br>
+			<input type="submit" value="Submit">
+		</form>
+	</div>
+</body>
+</html>

@@ -1,0 +1,38 @@
+{% extends "master.html" %}
+
+{% block body %}
+
+    <div class="container" data-aos="fade-up">
+<form method="post" action="/add_prod" enctype="multipart/form-data">
+      <div class="mb-3">
+                <label for="productImage" class="form-label">Upload Image Product</label>
+                <input class="form-control" type="file" name="file" required>
+            </div>
+            <div class="mb-3">
+                <label for="productName" class="form-label">Product Name</label>
+                <input class="form-control" type="text" id="productName" name="productName" required>
+            </div>
+            <div class="mb-3">
+                <label for="productPrice" class="form-label">Product Price</label>
+                <input class="form-control" type="number" id="productPrice" name="productPrice" required>
+            </div>
+            <div class="mb-3">
+                <label for="productDescription" class="form-label">Product Description</label>
+                <textarea class="form-control" id="productDescription" name="productDescription" rows="4" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Product</button>
+
+        </form>
+
+    </div>
+
+
+
+
+
+
+
+
+
+
+{% endblock %}

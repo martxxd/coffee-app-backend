@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Gcash Payment</title>
+  <style>
+    body {
+      background-color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      text-align: center;
+    }
+    form {
+      margin-top: 20px;
+    }
+    input[type="text"] {
+      width: 40px; /* Adjust width as needed */
+      padding: 8px;
+      font-size: 16px;
+      text-align: center;
+      margin: 0 5px; /* Adjust margin as needed */
+    }
+    input[type="submit"] {
+      padding: 10px 20px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+   <div class="container">
+    <img src="{{ url_for('static', filename='assets/img/gcash-logo-vector.png')}}" alt="GCash">
+    <form  method="get" onsubmit="validateOTP(event)">
+      <!-- Six input fields for OTP -->
+      <input type="text" maxlength="1" name="otp1" required>
+      <input type="text" maxlength="1" name="otp2" required>
+      <input type="text" maxlength="1" name="otp3" required>
+      <input type="text" maxlength="1" name="otp4" required>
+      <input type="text" maxlength="1" name="otp5" required>
+      <input type="text" maxlength="1" name="otp6" required><br><br>
+      <input type="submit" value="Submit">
+    </form>
+  </div>
+
+<script>
+    function validateOTP(event) {
+      event.preventDefault(); // Prevent form submission
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const phoneNumber = urlParams.get('phone');
+      const lastSixDigits = phoneNumber.substr(-6); // Extract the last six digits
+
+      const enteredOTP = Array.from(document.querySelectorAll('input[name^="otp"]'))
+        .map(input => input.value)
+        .join('');
+
+      if (enteredOTP === lastSixDigits) {
+        window.location.href = '/barista'; // Proceed to '/barista'
+      } else {
+        alert('Error: Incorrect OTP'); // Show error alert
+      }
+    }
+  </script>
+
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,130 @@
+    {% extends "master.html" %}
+    {% block body %}
+    <style type="text/css">
+      th {
+        background-color: black;
+        color: white;
+        font-size: 40px;
+        font-family: Arial;
+        font-weight: bold;
+        width: 50%; /* Equal width for each header cell */
+      }
+      td {
+        color: white;
+        font-size: 20px;
+        font-family: Arial;
+      }
+    </style>
+    <section class="full-height-section" >
+      <div class="container" data-aos="fade-up">
+        <div class="section-title">
+          <p style="color:white">Your Order</p>
+        </div>
+        <div class="row">
+         <div class="col-lg-6">
+          <div class="col-lg-12 d-flex align-items-center justify-content-center">
+            <img src="{{ url_for('static',filename='assets/img/barista.gif')}}" alt="" style="height: 400px; width: 400px;">
+          </div>
+          <div style="text-align: center;">
+            <p id="timerText" style="color: white;font-size: 18px;font-family: arial; font-weight: bold; margin-bottom: 0px">Your coffee is still making</p>
+          </div>
+          <p id="timer" style="color: white; font-size: 18px; font-family: arial; font-weight: bold; text-align: center; margin-top: 0px;padding-bottom: 0px">10 min(s) left</p>
+          <div class="progress" style="width: 100%; height: 20px; background-color: #ddd;">
+            <div id="progressBar" class="progress-bar" role="progressbar" style="width: 100%; background-color: white;"></div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <table id="cartTable">
+            <thead>
+              <tr>
+                <th colspan="3">Order List</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for name, item_details in cartData.items() %}
+              <tr>
+                <td>{{ item_details.quantity }}x</td>
+                <td>{{ name }}</td>
+                <td>₱{{ item_details.total_price }}</td>
+              </tr>
+              {% endfor %}
+              <tr class="total-row">
+                <td colspan="2" style="border-top: 3px solid white;"></td>
+                <td  id="totalPrice" style="border-top: 3px solid white; ">₱{{ total_price }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+  <script type="text/javascript">
+    let timeLeft = 10 * 60;
+    function updateTimer() {
+      const timerElement = document.getElementById('timer');
+      const progressBar = document.getElementById('progressBar');
+    const minutes = Math.floor(timeLeft / 60); // Calculate remaining minutes
+    timerElement.textContent = `${minutes} min(s) left`;
+    const progressPercent = ((10 * 60 - timeLeft) / (10 * 60)) * 100; // Calculate progress percentage
+    progressBar.style.width = `${progressPercent}%`;
+    progressBar.style.backgroundColor = `rgb(${255 - (progressPercent * 255) / 100}, 255, ${255 - (progressPercent * 255) / 100})`;
+    if (timeLeft > 0) {
+      timeLeft -= 60; // Subtract 1 second
+      if (timeLeft % 60 === 0) {
+        timeLeft -= 60; // Subtract an additional 60 seconds every minute
+      }
+    } else {
+      clearInterval(timerInterval);
+      timerElement.textContent = 'Done! Your order is on the way';
+      timerText.parentNode.removeChild(timerText); 
+
+
+
+      const randomString = generateRandomString(14);
+      $.ajax({
+        url: '/buyNow',
+        type: 'POST',
+        data: {
+          'randomString': randomString,
+        },
+        dataType: 'json',
+        success: function(data) {
+              window.location.href = '/location';
+        }
+      });
+
+
+
+
+
+
+
+
+
+
+      
+  
+    }
+  }
+  const timerInterval = setInterval(updateTimer, 1000);
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const cartTable = document.getElementById('cartTable');
+    const totalRow = cartTable.querySelector('.total-row');
+    let totalPrice = 0;
+    const priceCells = cartTable.querySelectorAll('tbody td:nth-child(3)'); // Select all cells with prices
+    priceCells.forEach(cell => {
+      const priceText = cell.textContent.trim(); // Remove leading/trailing whitespace
+      const price = parseFloat(priceText.substring(1)); // Remove the currency symbol '₱' before parsing
+      totalPrice += price;
+    });
+    // Update the total price in the table
+    totalRow.querySelector('#totalPrice').textContent = `₱${totalPrice.toFixed(2)}`;
+  });
+</script>
+
+
+
+
+{% endblock %}

@@ -1,0 +1,214 @@
+{% set url_segments = request.path.split('/') %}
+{% set last_segment = url_segments|last %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Starbs</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+
+
+  <!-- Bootstrap CSS -->
+  <!--   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"> -->
+
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=ABeeZee&amp;family=Allan&amp;family=Inter&amp;family=Lato:wght@400;700;900&amp;family=Vujahday+Script&amp;display=swap" rel="stylesheet">
+
+
+
+
+  <link href="{{ url_for('static',filename='assets/img/favicon.png')}}" rel="icon">
+  <link href="{{ url_for('static',filename='assets/img/apple-touch-icon.png')}}" rel="apple-touch-icon">
+  <!--   <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet"> -->
+  <link href="{{ url_for('static',filename='assets/vendor/animate.css/animate.min.css')}}" rel="stylesheet">
+  <link href="{{ url_for('static',filename='assets/vendor/aos/aos.css')}}" rel="stylesheet">
+  <link href="{{ url_for('static',filename='assets/vendor/bootstrap/css/bootstrap.min.css')}}" rel="stylesheet">
+  <link href="{{ url_for('static',filename='assets/vendor/bootstrap-icons/bootstrap-icons.css')}}" rel="stylesheet">
+  <link href="{{ url_for('static',filename='assets/vendor/boxicons/css/boxicons.min.css')}}" rel="stylesheet">
+  <link href="{{ url_for('static',filename='assets/vendor/glightbox/css/glightbox.min.css')}}" rel="stylesheet">
+  <link href="{{ url_for('static',filename='assets/vendor/remixicon/remixicon.css')}}" rel="stylesheet">
+  <link href="{{ url_for('static',filename='assets/vendor/swiper/swiper-bundle.min.css')}}" rel="stylesheet">
+  <link href="{{ url_for('static',filename='assets/css/style.css')}}" rel="stylesheet">
+
+  <style type="text/css">
+   .modal-open{overflow:hidden}
+   .modal-open .modal{overflow-x:hidden;overflow-y:auto}
+   .modal{position:fixed;top:0;left:0;z-index:1050;display:none;width:100%;height:100%;overflow:hidden;outline:0}
+   .modal-dialog{position:relative;width:auto;margin:.5rem;pointer-events:none}
+   .modal.fade .modal-dialog{transition:-webkit-transform .3s ease-out;transition:transform .3s ease-out;transition:transform .3s ease-out,-webkit-transform .3s ease-out;-webkit-transform:translate(0,-50px);transform:translate(0,-50px)}
+   @media (prefers-reduced-motion:reduce){.modal.fade .modal-dialog{transition:none}
+ }
+
+
+
+ .alert-dismissible .close{position:absolute;top:0;right:0;padding:.75rem 1.25rem;color:inherit}
+.close{float:right;font-size:1.5rem;font-weight:700;line-height:1;color:#000;text-shadow:0 1px 0 #fff;opacity:.5}
+.close:hover{color:#000;text-decoration:none}
+.close:not(:disabled):not(.disabled):focus,.close:not(:disabled):not(.disabled):hover{opacity:.75}
+button.close{padding:0;background-color:transparent;border:0}
+a.close.disabled{pointer-events:none}
+.modal-header .close{padding:1rem 1rem;margin:-1rem -1rem -1rem auto}
+
+
+
+ .modal.show .modal-dialog{-webkit-transform:none;transform:none}
+ .modal.modal-static .modal-dialog{-webkit-transform:scale(1.02);transform:scale(1.02)}
+ .modal-dialog-scrollable{display:-ms-flexbox;display:flex;max-height:calc(100% - 1rem)}
+ .modal-dialog-scrollable .modal-content{max-height:calc(100vh - 1rem);overflow:hidden}
+ .modal-dialog-scrollable .modal-footer,.modal-dialog-scrollable .modal-header{-ms-flex-negative:0;flex-shrink:0}
+ .modal-dialog-scrollable .modal-body{overflow-y:auto}
+ .modal-dialog-centered{display:-ms-flexbox;display:flex;-ms-flex-align:center;align-items:center;min-height:calc(100% - 1rem)}
+ .modal-dialog-centered::before{display:block;height:calc(100vh - 1rem);height:-webkit-min-content;height:-moz-min-content;height:min-content;content:""}
+ .modal-dialog-centered.modal-dialog-scrollable{-ms-flex-direction:column;flex-direction:column;-ms-flex-pack:center;justify-content:center;height:100%}
+ .modal-dialog-centered.modal-dialog-scrollable .modal-content{max-height:none}
+ .modal-dialog-centered.modal-dialog-scrollable::before{content:none}
+ .modal-content{position:relative;display:-ms-flexbox;display:flex;-ms-flex-direction:column;flex-direction:column;width:100%;pointer-events:auto;background-color:#fff;background-clip:padding-box;border:1px solid rgba(0,0,0,.2);border-radius:.3rem;outline:0}
+ .modal-backdrop{position:fixed;top:0;left:0;z-index:1040;width:100vw;height:100vh;background-color:#000}
+ .modal-backdrop.fade{opacity:0}
+ .modal-backdrop.show{opacity:.5}
+ .modal-header{display:-ms-flexbox;display:flex;-ms-flex-align:start;align-items:flex-start;-ms-flex-pack:justify;justify-content:space-between;padding:1rem 1rem;border-bottom:1px solid #dee2e6;border-top-left-radius:calc(.3rem - 1px);border-top-right-radius:calc(.3rem - 1px)}
+ .modal-header .close{padding:1rem 1rem;margin:-1rem -1rem -1rem auto}
+ .modal-title{margin-bottom:0;line-height:1.5}
+ .modal-body{position:relative;-ms-flex:1 1 auto;flex:1 1 auto;padding:1rem}
+ .modal-footer{display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap;-ms-flex-align:center;align-items:center;-ms-flex-pack:end;justify-content:flex-end;padding:.75rem;border-top:1px solid #dee2e6;border-bottom-right-radius:calc(.3rem - 1px);border-bottom-left-radius:calc(.3rem - 1px)}
+ .modal-footer>*{margin:.25rem}
+ .modal-scrollbar-measure{position:absolute;top:-9999px;width:50px;height:50px;overflow:scroll}
+ @media (min-width:576px){.modal-dialog{max-width:500px;margin:1.75rem auto}
+ .modal-dialog-scrollable{max-height:calc(100% - 3.5rem)}
+ .modal-dialog-scrollable .modal-content{max-height:calc(100vh - 3.5rem)}
+ .modal-dialog-centered{min-height:calc(100% - 3.5rem)}
+ .modal-dialog-centered::before{height:calc(100vh - 3.5rem);height:-webkit-min-content;height:-moz-min-content;height:min-content}
+ .modal-sm{max-width:300px}
+}
+@media (min-width:992px){.modal-lg,.modal-xl{max-width:800px}
+}
+@media (min-width:1200px){.modal-xl{max-width:1140px}
+}
+
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+</style>
+<style type="text/css">
+  #main-content {
+    min-height: calc(100vh - 230px); /* Adjust based on your header and footer height */
+    padding: 20px;
+
+  }
+</style>
+</head>
+<body style="background-color: black">
+  <header id="header" class="fixed-top" style="border-bottom: 15px solid orange;">
+    <div class="container d-flex align-items-center justify-content-between">
+      <h1 class="logo"><a href="{{ url_for('home') }}">Starbs</a></h1>
+      <nav id="navbar" class="navbar">
+        <ul>
+          {% if 'logged_in' in session %}
+          <li><a class="nav-link {% if last_segment == 'myaccount' %}active{% endif %}" href="{{ url_for('myaccount') }}">My Account</a></li>
+          <li><a class="nav-link {% if last_segment == 'products' %}active{% endif %}" href="{{ url_for('product') }}">Product</a></li>
+          <li><a class="nav-link {% if last_segment == 'checkout' %}active{% endif %}" href="{{ url_for('checkout') }}">Checkout</a></li>
+          <li><a class="getstarted scrollto" id="logoutBtn" >Logout</a></li>
+          {% else %}
+          <li><a class="getstarted scrollto" href="{{ url_for('signin') }}" style="font-size: 20px;">Sign In</a></li>
+          {% endif %}
+        </ul>
+        <i class="bi bi-list mobile-nav-toggle"></i>
+      </nav>
+
+    </div>
+  </header>
+  {% block home%} {% endblock %}
+
+
+  <main id="main-content" style=" overflow-y: auto;">
+    <!-- Your scrollable content goes here -->
+    {% block body%} {% endblock %}
+  </main>
+
+
+
+  <!-- Modal -->
+  <div class="modal fade" id="loadingModal" tabindex="-1" role="dialog" aria-labelledby="chatModalLabel" aria-hidden="true">
+    <div class="modal-dialog-centered" role="document">
+      <div class="modal-content" style="background-color: transparent; border: none;">
+        <div class="modal-body" style="text-align: center;">
+          <img src="{{ url_for('static',filename='assets/img/loader.png')}}" alt="" style="height: 200px; width: 200px; animation: rotate 2s linear infinite;">
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <footer id="footer" style="border-top: 15px solid orange;">
+    <div class="container">
+      <div class="credits">
+        Designed by <a href="#">Zear Developer</a>
+      </div>
+    </div>
+  </footer>
+  <div id="preloader"></div>
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+  <script src="{{ url_for('static',filename='assets/vendor/purecounter/purecounter_vanilla.js')}}"></script>
+  <script src="{{ url_for('static',filename='assets/vendor/aos/aos.js')}}"></script>
+  <script src="{{ url_for('static',filename='assets/vendor/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
+  <script src="{{ url_for('static',filename='assets/vendor/glightbox/js/glightbox.min.js')}}"></script>
+  <script src="{{ url_for('static',filename='assets/vendor/isotope-layout/isotope.pkgd.min.js')}}"></script>
+  <script src="{{ url_for('static',filename='assets/vendor/swiper/swiper-bundle.min.js')}}"></script>
+  <script src="{{ url_for('static',filename='assets/vendor/php-email-form/validate.js')}}"></script>
+  <script src="{{ url_for('static',filename='assets/js/main.js')}}"></script>
+
+  <script src="{{ url_for('static',filename='vendor/jquery/jquery.min.js')}}"></script>
+
+  <script type="text/javascript">
+    document.getElementById("logoutBtn").addEventListener("click", function() {
+      var form = document.createElement('form');
+      form.method = 'POST';
+  form.action = "{{ url_for('logout') }}";  // Replace 'logout' with your actual Flask endpoint
+  document.body.appendChild(form);
+  form.submit();
+});
+</script>
+
+<script type="text/javascript">
+  function delay(milliseconds) {
+    return new Promise(function (resolve) {
+      setTimeout(resolve, milliseconds);
+    });
+  }
+</script>
+
+
+
+<script type="text/javascript">
+  function generateRandomString(length) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    const charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+  }
+</script>
+
+
+<!-- Bootstrap JS and jQuery -->
+<!--   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script> -->
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>

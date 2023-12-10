@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+	<meta charset="UTF-8">
+	<title>Starbs</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+	<link href="https://fonts.googleapis.com/css2?family=ABeeZee&amp;family=Allan&amp;family=Inter&amp;family=Lato:wght@400;700;900&amp;family=Vujahday+Script&amp;display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+	<link rel="stylesheet" href="{{ url_for('static',filename='sinout/style.css')}}">
+</head>
+<body>
+	<!-- partial:index.partial.html -->
+	<div class="container right-panel-active">
+		<!-- Sign In -->
+		<div class="container__form container--signup">
+			<a href="{{ url_for('home') }}" class="logback" >  <span class="back-icon">⟵</span>  Back</a>
+			<div style=" justify-content: center; margin-top: 5%;margin-left: 5%;margin-right:  5%">
+				<form action="#" class="form" id="myForm" style="align-items: flex-start;">
+					<h1 style="font-size: 30px; font-weight: bold; margin-bottom: 10px;">Account Signup</h1>
+					<!-- Input fields -->
+					<label for="name">Full Name</label>
+					<input type="text" id="fname" name="name" required class="input">
+					<label for="email">Email address</label>
+					<input type="email" id="email" name="email" required class="input">
+					<label for="password">Password</label>
+					<input type="password" id="password" name="password" required class="input">
+					<label for="gender">Gender</label>
+					<select id="gender" class="input">
+						<option value="" selected disabled>Select Here</option>
+						<option value="Male">Male</option>
+						<option value="Female">Female</option>
+					</select>
+					<button type="submit">Continue</button>
+				</form>
+			</div>
+		</div>
+		<!-- Overlay -->
+		<div class="container__overlay">
+			<div class="overlay">
+				<a href="/" class="loginstarbs">Starbs</a>
+				<div class="overlay__panel gif-container overlay__panel overlay--left">
+					<img src="{{ url_for('static',filename='assets/img/coffeeMug.gif')}}" alt="" style="height: 650px; width: 500px;">
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- partial -->
+	<!-- Jquery JS-->
+	<script src="{{ url_for('static',filename='vendor/jquery/jquery.min.js')}}"></script>
+	<script  src="{{ url_for('static',filename='sinout/script.js')}}"></script>
+	<script>
+		document.getElementById('myForm').addEventListener('submit', function(event) {
+			event.preventDefault(); 
+			const fullname = document.getElementById('fname').value;
+			const email = document.getElementById('email').value;
+			const password = document.getElementById('password').value;
+			const gender = document.getElementById('gender').value;
+			$.ajax({
+				url: '/signup',
+				type: 'POST',
+				data: {
+					'email': email,
+					'password': password,
+					'fname': fullname,
+					'gender': gender
+				},
+				dataType: 'json',
+				success: function (data) {
+					if (data === 1) {
+						window.location.href = '/login';
+					} else {
+						alert("Error: " + data.error);
+					}
+				},
+				error: function (xhr, status, error) {
+					alert("An error occurred: " + error);
+				}
+			});
+		});
+	</script>
+</body>
+</html>

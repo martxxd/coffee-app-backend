@@ -1,0 +1,177 @@
+{% extends "master.html" %}
+{% block body %}
+<style>
+  th {
+    background-color: black;
+    color: white;
+    font-size: 40px;
+    font-family: Arial;
+    font-weight: bold;
+    width: 50%; /* Equal width for each header cell */
+  }
+  td {
+    border-bottom: 1px solid white; /* Add a bottom border to table data cells */
+    color: white;
+    font-size: 20px;
+    font-family: Arial;
+    padding: 10px; /* Add padding for better spacing */
+  }
+  .payment-box {
+    background-color: #C96014;
+    padding: 0px;
+    margin-top: 0px;
+    border-radius: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 70%;
+  }
+  .payment-heading {
+    color: white;
+    font-size: 50px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    font-family: Arial;
+  }
+  .payment-option {
+    background-color: white;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    width: 150px; /* Added width */
+    max-width: 100%;
+    text-align: center;
+    font-weight: normal;
+    font-weight: bold;
+  }
+  .payment-option img {
+    max-width: 100%;
+    max-height: 150px;
+  }
+</style>
+<style>
+  /* CSS to adjust z-index for the modal */
+  .modal {
+    z-index: 1050; /* Adjust the value as needed */
+  }
+</style>
+<section class="full-height-section" style="background-color: black">
+  <div class="container" data-aos="fade-up">
+    <div class="section-title">
+      <p style="color:white; font-size: 64px; font-family: Arial; font-weight: bold;">Shopping Cart</p>
+    </div>
+    <div class="row">
+      <div class="col-lg-8">
+        <table id="cartTable">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Quantity</th>
+              <th colspan="2">Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in cartData %}
+            <tr>
+              <td>{{ item.name }}</td>
+              <td>{{ item.quantity }}</td>
+              <td>₱{{ item.price }}</td>
+              <td>      
+                <form action="/remove_from_cart/{{ item.id }}" method="POST">
+                  <button type="submit" style="background-color: transparent; color: white; border: none; padding: 5px 10px; border-radius: 50%; font-weight: bold;">X</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+            <tr class="total-row">
+              <td colspan="2" style="text-align: right;">Total: </td>
+              <td id="totalPrice">₱{{ total_price }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="col-lg-4">
+        <h2 style="color:white;  font-family: Arial; font-weight: bold;">Delivery Address</h2>
+        <p>{{ userDatas.streetOrHouseNumber }}, {{ userDatas.city }}<br>Cellphone Number: <span>{{ userDatas.phoneNumber }}</span></p>
+        <div class="payment-box">
+          <div class="payment-heading">Pay By</div>
+          <div class="payment-options">
+            <input type="hidden" id="paymentMethod" name="paymentMethod" value="" />
+            <div id="cashPayment" class="payment-option"
+            onmouseover="this.style.backgroundColor='green'; this.style.color='white'"
+            onmouseout="this.style.backgroundColor='white'; this.style.color='black'"
+            onclick="togglePayment('gcashPayment', 'cashPayment', 'Cash')"
+            style="display: inline-block; color: black"
+            >
+            Cash
+          </div>
+<div id="gcashPayment" class="payment-option" style="height: 40px; display: block; color: black; background-image: url('{{ url_for('static', filename='assets/img/gcash-logo-vector.svg')}}'); background-size: cover; background-repeat: no-repeat; background-position: center;"
+    onmouseover="this.style.backgroundColor='blue'; "
+    onmouseout="this.style.backgroundColor='white';"
+    onclick="togglePayment('cashPayment', 'gcashPayment', 'Gcash')"
+>
+    <!-- Content -->
+</div>
+
+
+
+    </div>
+  </div>
+  <a href="#" id="ordernow" onclick="orderNow()" class="btn-get-starteds animate__animated animate__fadeInUp scrollto" style="margin-top: 5px; display: block ; width: 72% ; text-align: center;" >Order Now</a>
+</div>
+</div>
+</div>
+</section>
+<script>
+  function togglePayment(showId, hideId, paymentMethod) {
+    const showDiv = document.getElementById(showId);
+    const hideDiv = document.getElementById(hideId);
+    const paymentInput = document.getElementById('paymentMethod');
+    if (showDiv && hideDiv && paymentInput) {
+      showDiv.style.display = 'block';
+      hideDiv.style.display = 'none';
+      paymentInput.value = paymentMethod;
+    } else {
+      console.error('Elements not found');
+    }
+  }
+  function orderNow() {
+    const paymentInput = document.getElementById('paymentMethod').value;
+
+    var totalPriceElement = document.getElementById('totalPrice');
+    var totalPrice = totalPriceElement.textContent;
+
+
+    if (totalPrice == "₱0.00") { 
+      window.location.href = '/products';
+    }else{
+
+      if (paymentInput === "Cash") {
+        window.location.href = '/barista';
+      } 
+      else if (paymentInput === "Gcash") {
+        window.location.href = '/gcash';
+      } else {
+        alert('Select a payment method');
+      }
+    }
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const cartTable = document.getElementById('cartTable');
+    const totalRow = cartTable.querySelector('.total-row');
+    let totalPrice = 0;
+    const priceCells = cartTable.querySelectorAll('tbody td:nth-child(3)');
+    priceCells.forEach(cell => {
+      const priceText = cell.textContent.trim(); // Remove leading/trailing whitespace
+      const price = parseFloat(priceText.substring(1)); // Remove the currency symbol '₱' before parsing
+      totalPrice += price;
+    });
+    // Update the total price in the table
+    totalRow.querySelector('#totalPrice').textContent = `₱${totalPrice.toFixed(2)}`;
+  });
+</script>
+
+{% endblock %}
