@@ -115,41 +115,56 @@
 <script  src="{{ url_for('static',filename='sinout/script.js')}}"></script>
 <script>
   document.getElementById('myForm').addEventListener('submit', function(event) {
-    event.preventDefault(); 
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    $('#loadingModal').modal('show');
-    $.ajax({
-      url: '/login',
-      type: 'POST',
-      data: {
-        'email': email,
-        'password': password,
-      },
-      dataType: 'json',
-      success: function(data) {
-        if (data === 1) {
-          changeImageAfterDelay();
-        } else {
-          alert("Invalid Credentials");
-        }
+  event.preventDefault(); 
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  $.ajax({
+    url: '/login',
+    type: 'POST',
+    data: {
+      'email': email,
+      'password': password,
+    },
+    dataType: 'json',
+    success: function(data) {
+      if (data === 1) {
+        $('#loadingModal').modal('show');
+        changeImageAfterDelay();
+      } else {
+        $('#password').after('<p style="color:red;">Incorrect email or password</p>');
       }
+    },
+    error: function() {
+      // Handle error if AJAX request fails
+      $('#password').after('<p style="color:red;">An error occurred. Please try again later.</p>');
+    }
+  });
+});
+
+function delay(milliseconds) {
+  return new Promise(function (resolve) {
+    setTimeout(resolve, milliseconds);
+  });
+}
+
+function changeImageAfterDelay() {
+  var image = document.querySelector('#loadingModal img');
+  delay(3000).then(function () {
+    image.style.animation = 'none';
+    image.setAttribute("src", "{{ url_for('static',filename='assets/img/success.gif')}}");
+  }).then(function(){
+    delay(3000).then(function(){
+      window.location.href = '/';
     });
   });
-</script>
-<script type="text/javascript">
-  function delay(milliseconds) {
-    return new Promise(function (resolve) {
-      setTimeout(resolve, milliseconds);
-    });
-  }
+}
 </script>
 <script type="text/javascript">
   function changeImageAfterDelay() {
     var image = document.querySelector('#loadingModal img');
     delay(3000).then(function () {
       image.style.animation = 'none';
-      image.setAttribute('src', '{{ url_for('static',filename='assets/img/success.gif')}}');
+      image.setAttribute("src", "{{ url_for('static',filename='assets/img/success.gif')}}");
     }).then(function(){
      delay(3000).then(function(){
        window.location.href = '/';
