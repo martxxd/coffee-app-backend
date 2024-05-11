@@ -62,40 +62,44 @@
 	<script src="{{ url_for('static',filename='vendor/jquery/jquery.min.js')}}"></script>
 	<script  src="{{ url_for('static',filename='sinout/script.js')}}"></script>
 	<script>
-        document.querySelectorAll('input[name="gender"]').forEach((elem) => {
-            elem.addEventListener('change', function() {
-                const otherText = document.getElementById('otherText');
-                if (this.value === "Other") {
-                    otherText.style.display = "inline-block";
-                    otherText.setAttribute("required", "required");
-                } else {
-                    otherText.style.display = "none";
-                    otherText.removeAttribute("required");
-                }
-            });
-        });
-
-        document.getElementById('myForm').addEventListener('submit', function(event) {
-            event.preventDefault(); 
-            const firstname = document.getElementById('fname').value;
-            const lastname = document.getElementById('lname').value;
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const confirm_password = document.getElementById('confirm_password').value;
-            const gender = document.querySelector('input[name="gender"]:checked').value;
-            const otherText = document.getElementById('otherText').value;
-
-            // Check if passwords match
-            if (password !== confirm_password) {
-                alert("Passwords do not match");
-                return;
+      document.querySelectorAll('input[name="gender"]').forEach((elem) => {
+        elem.addEventListener('change', function() {
+            const otherText = document.getElementById('otherText');
+            if (this.value === "Other") {
+                otherText.style.display = "inline-block";
+                otherText.setAttribute("required", "required");
+            } else {
+                otherText.style.display = "none";
+                otherText.removeAttribute("required");
             }
+        });
+    });
 
-            // If "Other" is selected, make sure otherText is not empty
-            if (gender === "Other" && otherText.trim() === "") {
+    document.getElementById('myForm').addEventListener('submit', function(event) {
+        event.preventDefault(); 
+        const firstname = document.getElementById('fname').value;
+        const lastname = document.getElementById('lname').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const confirm_password = document.getElementById('confirm_password').value;
+        const gender = document.querySelector('input[name="gender"]:checked').value;
+        let otherText = null;
+
+        // Check if passwords match
+        if (password !== confirm_password) {
+            alert("Passwords do not match");
+            return;
+        }
+
+        // If "Other" is selected, get the value from otherText field
+        if (gender === "Other") {
+            otherText = document.getElementById('otherText').value.trim();
+            // Check if otherText is empty
+            if (otherText === "") {
                 alert("Please specify your gender");
                 return;
             }
+        }
 
             $.ajax({
                 url: '/signup',

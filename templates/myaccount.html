@@ -30,7 +30,13 @@
                 <select id="gender" class="form-select" disabled>
                   <option value="Male" {% if userDatas[0].gender == 'Male' %} selected {% endif %}>Male</option>
                   <option value="Female" {% if userDatas[0].gender == 'Female' %} selected {% endif %}>Female</option>
-                </select>
+                  {% if userDatas[0].gender != 'Male' and userDatas[0].gender != 'Female' %}
+                      <option value="{{ userDatas[0].gender }}" selected>{{ userDatas[0].gender }}</option>
+                  {% else %}
+                      <option value="Other" {% if userDatas[0].gender == 'Other' %} selected {% endif %}>Other</option>
+                  {% endif %}
+              </select>
+              
               </div>
 
             </div>

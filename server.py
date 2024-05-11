@@ -107,9 +107,9 @@ def signin():
             
             if user.is_admin:
                 session['is_admin'] = True
-                return jsonify({'status': 'success', 'admin': True})  # Return JSON response for admin
+                return jsonify({'status': 'success', 'admin': True})
             else:
-                return jsonify({'status': 'success', 'admin': False})  # Return JSON response for regular user
+                return jsonify({'status': 'success', 'admin': False})
         else:
            return jsonify({'status': 'error', 'message': 'Invalid email or password'})
 
@@ -132,6 +132,11 @@ def signup():
             is_admin = True
 
         if password == confirm_password:
+
+             # If gender is "Other", store the specified text in the database
+            if gender == 'Other':
+                gender = request.form['otherText']
+                
             hashed_password = generate_password_hash(password)
             new_user = User(fullname=fullname, email=email, gender=gender, password=hashed_password,
                             phoneNumber=phoneNumber, city=city, streetOrHouseNumber=streetOrHouseNumber,
@@ -145,7 +150,7 @@ def signup():
 
 @app.route('/update_user', methods=['POST'])
 def update_user():
-    user_id = session['id'] 
+    user_id = session['id']
     user = User.query.get(user_id)
     if user:
         user.fullname = request.form['fullname']
@@ -154,10 +159,15 @@ def update_user():
         user.phoneNumber = request.form['phoneNumber']
         user.city = request.form['city']
         user.streetOrHouseNumber = request.form['streetOrHouseNumber']
+        
+        # Check if gender is "Other" and update otherText field accordingly
+        if user.gender == 'Other':
+            user.otherText = request.form.get('otherText', '')  # Get value from form or empty string if not provided
+
         db.session.commit()
-        return "1"
+        return "1"  # Success response
     else:
-        return "User not found"
+        return "User not found"  # Error response if user not found
 
 @app.route('/logout', methods=['POST'])
 def logout():
