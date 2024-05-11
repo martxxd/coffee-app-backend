@@ -62,11 +62,25 @@
               </div>
 
 
-            <!-- City input -->
-            <div class="mt-4">
-              <label for="city" class="form-label" style="color:white">City:</label>
-              <input type="text" id="city" class="form-control" value="{% if userDatas[0].city %}{{ userDatas[0].city }}{% else %}{% endif %}" readonly>
-            </div>
+           <!-- Dropdowns for Province, City, and Barangay -->
+           <div class="col-lg-12 mt-3">
+            <label for="province" class="form-label" style="color:white">Province:</label>
+            <select id="province" class="form-select">
+              <!-- Options will be populated dynamically -->
+            </select>
+          </div>
+          <div class="col-lg-12 mt-3">
+            <label for="city" class="form-label" style="color:white">City:</label>
+            <select id="city" class="form-select">
+              <!-- Options will be populated dynamically -->
+            </select>
+          </div>
+          <div class="col-lg-12 mt-3">
+            <label for="barangay" class="form-label" style="color:white">Barangay:</label>
+            <select id="barangay" class="form-select">
+              <!-- Options will be populated dynamically -->
+            </select>
+          </div>
 
             <!-- Address textarea -->
             <div class="mt-3">
@@ -87,9 +101,51 @@
   </section><!-- End About Section -->
 
 
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Function to populate dropdowns based on selected code and endpoint
+        function populateDropdown(endpoint, code, dropdown, label) {
+            fetch(`https://psgc.gitlab.io/api/${endpoint}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Failed to fetch ${label}.`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const dropdownElement = document.getElementById(dropdown);
+                    dropdownElement.innerHTML = ''; // Clear existing options
+                    if (Array.isArray(data) && data.length > 0) {
+                        data.sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically
+                        data.forEach(item => {
+                            const option = document.createElement('option');
+                            option.value = item.code;
+                            option.textContent = item.name;
+                            dropdownElement.appendChild(option);
+                        });
+                    } else {
+                        throw new Error(`Invalid response format for ${label}.`);
+                    }
+                })
+                .catch(error => console.error(`Error fetching ${label}:`, error));
+        }
 
+        // Event listener for province selection
+        document.getElementById('province').addEventListener('change', function() {
+            const selectedProvinceCode = this.value;
+            populateDropdown(`provinces/${selectedProvinceCode}/cities-municipalities`, '', 'city', 'cities');
+        });
 
+        // Event listener for city/municipality selection
+        document.getElementById('city').addEventListener('change', function() {
+            const selectedCityCode = this.value;
+            populateDropdown(`cities/${selectedCityCode}/barangays`, '', 'barangay', 'barangays');
+        });
 
+        // Initialize province dropdown on page load
+        populateDropdown('provinces', '', 'province', 'provinces');
+    });
+</script>
 
   <script>
     document.addEventListener("DOMContentLoaded", function() {
