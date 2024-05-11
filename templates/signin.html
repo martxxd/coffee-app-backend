@@ -122,23 +122,31 @@
     url: '/login',
     type: 'POST',
     data: {
-      'email': email,
-      'password': password,
+        'email': email,
+        'password': password,
     },
     dataType: 'json',
     success: function(data) {
-      if (data === 1) {
-        $('#loadingModal').modal('show');
-        changeImageAfterDelay();
-      } else {
-        $('#password').after('<p style="color:red;">Incorrect email or password</p>');
-      }
+        if (data.status === 'success') {
+            if (data.admin) {
+                // Redirect admin to admin dashboard
+                window.location.href = '/dashboard_admin';
+            } else {
+                // Redirect regular user to regular dashboard or perform other actions
+                window.location.href = '/';
+            }
+        } else {
+            // Handle error messages or other cases
+            console.log(data.message);
+        }
     },
     error: function() {
-      // Handle error if AJAX request fails
-      $('#password').after('<p style="color:red;">An error occurred. Please try again later.</p>');
+      
+        console.log('An error occurred. Please try again later.');
     }
-  });
+});
+
+
 });
 
 function delay(milliseconds) {

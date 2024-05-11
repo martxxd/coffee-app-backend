@@ -33,8 +33,11 @@ class User(db.Model):
     streetOrHouseNumber = db.Column(db.String(60), nullable=True)
     create_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     update_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    is_admin = db.Column(db.Boolean, default=False)
+
     def __repr__(self):
         return f"User('{self.fullname}', '{self.email}', '{self.gender}', '{self.phoneNumber}', '{self.city}', '{self.streetOrHouseNumber}')"
+
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -90,19 +93,26 @@ Authentication
 def signin():
     if 'logged_in' in session:
         return redirect(url_for('home'))
+
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
         user = User.query.filter_by(email=email).first()
-        user_id = None
+
         if user and check_password_hash(user.password, password):
             session['logged_in'] = True
-            user_id = user.id
-            session['id'] = user_id
-            return '1'
+            session['id'] = user.id
+            
+            if user.is_admin:
+                session['is_admin'] = True
+                return jsonify({'status': 'success', 'admin': True})  # Return JSON response for admin
+            else:
+                return jsonify({'status': 'success', 'admin': False})  # Return JSON response for regular user
         else:
-            return '0'
+            return jsonify({'status': 'error', 'message': 'Invalid credentials'})  # Return JSON response for invalid credentials
+
     return render_template('signin.html', invalid_input=False)
+
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -115,9 +125,16 @@ def signup():
         phoneNumber = None
         city = None
         streetOrHouseNumber = None
+        is_admin = False  
+        
+        if email.endswith('@admin.com'):
+            is_admin = True
+
         if password == confirm_password:
             hashed_password = generate_password_hash(password)
-            new_user = User(fullname=fullname, email=email, gender=gender, password=hashed_password, phoneNumber=phoneNumber, city=city, streetOrHouseNumber=streetOrHouseNumber)
+            new_user = User(fullname=fullname, email=email, gender=gender, password=hashed_password,
+                            phoneNumber=phoneNumber, city=city, streetOrHouseNumber=streetOrHouseNumber,
+                            is_admin=is_admin)  
             db.session.add(new_user)
             db.session.commit()
             return "1" 
@@ -145,15 +162,35 @@ def update_user():
 def logout():
     session.pop('logged_in', None)
     session.pop('id', None)
+    session.pop('is_admin', None)  
     return redirect(url_for('home'))
-
-
 
 '''
 ==========================================================
 Routes
 ===========================================================
 '''
+
+@app.route('/dashboard_admin')
+@login_required
+def dashboard_admin():
+    if 'is_admin' in session and session['is_admin']:
+        return render_template('dashboard.html')
+    else:
+        return redirect(url_for('home'))
+
+@app.route('/manage_orders')
+def manage_orders():
+    return render_template('manage_orders.html')
+
+@app.route('/manage_products')
+def manage_products():
+    return render_template('manage_products.html')
+
+@app.route('/manage_users')
+def manage_users():
+    # Logic for managing users
+    return render_template('manage_users.html')
 
 @app.route('/', methods=['GET'])
 def home():
