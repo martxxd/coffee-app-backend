@@ -7,10 +7,12 @@ from functools import wraps
 import os, json
 from datetime import datetime
 from collections import defaultdict
+
 app = Flask(__name__)
 app.secret_key = 'sadgasasdsadasdasfasdasdasdasd'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///BSCS-CSM2.db'
 db = SQLAlchemy(app)
+
 UPLOAD_FOLDER = 'static/assets/img'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -113,11 +115,10 @@ def signin():
 
     return render_template('signin.html', invalid_input=False)
 
-
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        fullname = request.form['fname']
+        fullname = f"{request.form['fname']} {request.form['lname']}"
         email = request.form['email']
         password = request.form['password']
         confirm_password = request.form['password']
@@ -183,13 +184,12 @@ def dashboard_admin():
 def manage_orders():
     return render_template('manage_orders.html')
 
-@app.route('/manage_products')
-def manage_products():
-    return render_template('manage_products.html')
+@app.route('/manage_payments')
+def manage_payments():
+    return render_template('manage_payments.html')
 
 @app.route('/manage_users')
 def manage_users():
-    # Logic for managing users
     return render_template('manage_users.html')
 
 @app.route('/', methods=['GET'])

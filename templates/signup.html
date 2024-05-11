@@ -25,23 +25,24 @@
                     <input type="text" id="lname" name="lname" required class="input">
                     <label>Gender</label>
                     <div style="display: flex; align-items: center; font-size: 16px; margin-top: 10px; margin-bottom: 10px;">
-						<input type="radio" id="male" name="gender" value="Male" required style="margin-right: 5px;">
-						<label for="male" style="margin-right: 30px;">Male</label>
-						<input type="radio" id="female" name="gender" value="Female" style="margin-right: 5px;">
-						<label for="female" style="margin-right: 30px;">Female</label>
-						<input type="radio" id="other" name="gender" value="Other" style="margin-right: 5px;">
-						<label for="other" style="margin-right: 30px;">Other</label>
-						<input type="text" id="otherText" name="otherText" style="display: none; width: 150px;" placeholder="Please specify">
-					</div>					
+                        <input type="radio" id="male" name="gender" value="Male" required style="margin-right: 5px;">
+                        <label for="male" style="margin-right: 30px;">Male</label>
+                        <input type="radio" id="female" name="gender" value="Female" style="margin-right: 5px;">
+                        <label for="female" style="margin-right: 30px;">Female</label>
+                        <input type="radio" id="other" name="gender" value="Other" style="margin-right: 5px;">
+                        <label for="other" style="margin-right: 30px;">Other</label>
+                        <input type="text" id="otherText" name="otherText" style="display: none; width: 150px;" placeholder="Please specify">
+                    </div>                    
                     <label for="email">Email address</label>
                     <input type="email" id="email" name="email" required class="input" autocomplete="new-email">
-
                     <label for="password">Password</label>
                     <input type="password" id="password" name="password" required class="input" autocomplete="new-password">
-
                     <label for="confirm_password">Confirm Password</label>
                     <input type="password" id="confirm_password" name="confirm_password" required class="input" autocomplete="new-password">
-
+                    <div style="margin-bottom: 10px;">
+                        <input type="checkbox" id="agree_terms" required>
+                        <label for="agree_terms">I agree to the Terms and Conditions</label>
+                    </div>
                     <button type="submit">Continue</button>
                 </form>
 			</div>
