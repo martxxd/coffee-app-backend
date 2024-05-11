@@ -3,14 +3,17 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import and_
+from sqlalchemy.orm import Session
 from functools import wraps
 import os, json
 from datetime import datetime
 from collections import defaultdict
+
 app = Flask(__name__)
 app.secret_key = 'sadgasasdsadasdasfasdasdasdasd'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///BSCS-CSM2.db'
 db = SQLAlchemy(app)
+
 UPLOAD_FOLDER = 'static/assets/img'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -31,10 +34,15 @@ class User(db.Model):
     phoneNumber = db.Column(db.String(60), nullable=True)
     city = db.Column(db.String(60), nullable=True)
     streetOrHouseNumber = db.Column(db.String(60), nullable=True)
+    province = db.Column(db.String(60), nullable=True)
+    barangay = db.Column(db.String(60), nullable=True) 
     create_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     update_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    is_admin = db.Column(db.Boolean, default=False)
+
     def __repr__(self):
         return f"User('{self.fullname}', '{self.email}', '{self.gender}', '{self.phoneNumber}', '{self.city}', '{self.streetOrHouseNumber}')"
+
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -90,24 +98,30 @@ Authentication
 def signin():
     if 'logged_in' in session:
         return redirect(url_for('home'))
+
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
         user = User.query.filter_by(email=email).first()
-        user_id = None
+
         if user and check_password_hash(user.password, password):
             session['logged_in'] = True
-            user_id = user.id
-            session['id'] = user_id
-            return '1'
+            session['id'] = user.id
+            
+            if user.is_admin:
+                session['is_admin'] = True
+                return jsonify({'status': 'success', 'admin': True})
+            else:
+                return jsonify({'status': 'success', 'admin': False})
         else:
-            return '0'
+           return jsonify({'status': 'error', 'message': 'Invalid email or password'})
+
     return render_template('signin.html', invalid_input=False)
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        fullname = request.form['fname']
+        fullname = f"{request.form['fname']} {request.form['lname']}"
         email = request.form['email']
         password = request.form['password']
         confirm_password = request.form['password']
@@ -115,9 +129,21 @@ def signup():
         phoneNumber = None
         city = None
         streetOrHouseNumber = None
+        is_admin = False  
+        
+        if email.endswith('@admin.com'):
+            is_admin = True
+
         if password == confirm_password:
+
+             # If gender is "Other", store the specified text in the database
+            if gender == 'Other':
+                gender = request.form['otherText']
+
             hashed_password = generate_password_hash(password)
-            new_user = User(fullname=fullname, email=email, gender=gender, password=hashed_password, phoneNumber=phoneNumber, city=city, streetOrHouseNumber=streetOrHouseNumber)
+            new_user = User(fullname=fullname, email=email, gender=gender, password=hashed_password,
+                            phoneNumber=phoneNumber, city=city, streetOrHouseNumber=streetOrHouseNumber,
+                            is_admin=is_admin)  
             db.session.add(new_user)
             db.session.commit()
             return "1" 
@@ -127,8 +153,8 @@ def signup():
 
 @app.route('/update_user', methods=['POST'])
 def update_user():
-    user_id = session['id'] 
-    user = User.query.get(user_id)
+    user_id = session['id']
+    user = db.session.get(User, user_id)
     if user:
         user.fullname = request.form['fullname']
         user.email = request.form['email']
@@ -136,24 +162,102 @@ def update_user():
         user.phoneNumber = request.form['phoneNumber']
         user.city = request.form['city']
         user.streetOrHouseNumber = request.form['streetOrHouseNumber']
+        user.province = request.form['province']
+        user.barangay = request.form['barangay']
+        
+        # Check if gender is "Other" and update otherText field accordingly
+        if user.gender == 'Other':
+            user.otherText = request.form.get('otherText', '')  # Get value from form or empty string if not provided
+
         db.session.commit()
-        return "1"
+        return jsonify({"success": True})  # Success response as JSON
     else:
-        return "User not found"
+        return jsonify({"error": "User not found"})  # Error response as JSON
 
 @app.route('/logout', methods=['POST'])
 def logout():
     session.pop('logged_in', None)
     session.pop('id', None)
+    session.pop('is_admin', None)  
     return redirect(url_for('home'))
 
+'''
+==========================================================
+Admin Side
+===========================================================
+'''
 
+@app.route('/product_details/<int:product_id>')
+def product_details(product_id):
+    # Query the Product table to get the product details
+    product = Product.query.get_or_404(product_id)
+
+    # Prepare the product details as a dictionary
+    product_details = {
+        'id': product.id,
+        'pName': product.pName,
+        'pDesc': product.pDesc,
+        'pPrice': product.pPrice,
+        'piamge': product.piamge,
+        'create_at': product.create_at,
+        'update_at': product.update_at
+    }
+
+    # Return the product details as JSON
+    return jsonify(product_details)
+
+@app.route('/edit_product/<int:product_id>', methods=['GET', 'POST'])
+def edit_product(product_id):
+    product = Product.query.get_or_404(product_id)
+
+    if request.method == 'POST':
+        product.pName = request.form['productName']
+        product.pDesc = request.form['productDescription']
+        product.pPrice = request.form['productPrice']
+        db.session.commit()
+        flash('Product updated successfully!', 'success')
+        return redirect(url_for('manage_products'))
+
+    return render_template('manage_products.html', product=product)
+
+
+@app.route('/remove_product/<int:product_id>', methods=['POST'])
+def remove_product(product_id):
+    product = Product.query.get_or_404(product_id)
+    db.session.delete(product)
+    db.session.commit()
+    flash('Product removed successfully!', 'success')
+    return redirect(url_for('manage_products'))
+
+@app.route('/dashboard_admin')
+@login_required
+def dashboard_admin():
+    if 'is_admin' in session and session['is_admin']:
+        return render_template('dashboard.html')
+    else:
+        return redirect(url_for('home'))
+
+@app.route('/manage_orders')
+def manage_orders():
+    return render_template('manage_orders.html')
+
+@app.route('/manage_products')
+def manage_products():
+    # Query all products from the Product table
+    products = Product.query.all()
+    return render_template('manage_products.html', products=products)
+
+
+@app.route('/manage_users')
+def manage_users():
+    return render_template('manage_users.html')
 
 '''
 ==========================================================
 Routes
 ===========================================================
 '''
+
 
 @app.route('/', methods=['GET'])
 def home():

@@ -30,7 +30,13 @@
                 <select id="gender" class="form-select" disabled>
                   <option value="Male" {% if userDatas[0].gender == 'Male' %} selected {% endif %}>Male</option>
                   <option value="Female" {% if userDatas[0].gender == 'Female' %} selected {% endif %}>Female</option>
-                </select>
+                  {% if userDatas[0].gender != 'Male' and userDatas[0].gender != 'Female' %}
+                      <option value="{{ userDatas[0].gender }}" selected>{{ userDatas[0].gender }}</option>
+                  {% else %}
+                      <option value="Other" {% if userDatas[0].gender == 'Other' %} selected {% endif %}>Other</option>
+                  {% endif %}
+              </select>
+              
               </div>
 
             </div>
@@ -56,11 +62,41 @@
               </div>
 
 
-            <!-- City input -->
-            <div class="mt-4">
-              <label for="city" class="form-label" style="color:white">City:</label>
-              <input type="text" id="city" class="form-control" value="{% if userDatas[0].city %}{{ userDatas[0].city }}{% else %}{% endif %}" readonly>
-            </div>
+           <!-- Dropdowns for Province, City, and Barangay -->
+           <div class="col-lg-12 mt-3">
+            <label for="province" class="form-label" style="color:white">Province:</label>
+            <select id="province" class="form-select">
+                {% if userDatas[0].province %}
+                    <option value="{{ userDatas[0].province }}" selected>{{ userDatas[0].province }}</option>
+                {% else %}
+                    <option value="" selected>Please select Province</option>
+                {% endif %}
+                <!-- Options will be populated dynamically -->
+            </select>
+        </div>
+        <div class="col-lg-12 mt-3">
+            <label for="city" class="form-label" style="color:white">City:</label>
+            <select id="city" class="form-select">
+                {% if userDatas[0].city %}
+                    <option value="{{ userDatas[0].city }}" selected>{{ userDatas[0].city }}</option>
+                {% else %}
+                    <option value="" selected>Please select City</option>
+                {% endif %}
+                <!-- Options will be populated dynamically -->
+            </select>
+        </div>
+        <div class="col-lg-12 mt-3">
+            <label for="barangay" class="form-label" style="color:white">Barangay:</label>
+            <select id="barangay" class="form-select">
+                {% if userDatas[0].barangay %}
+                    <option value="{{ userDatas[0].barangay }}" selected>{{ userDatas[0].barangay }}</option>
+                {% else %}
+                    <option value="" selected>Please select Barangay</option>
+                {% endif %}
+                <!-- Options will be populated dynamically -->
+            </select>
+        </div>
+        
 
             <!-- Address textarea -->
             <div class="mt-3">
@@ -81,14 +117,73 @@
   </section><!-- End About Section -->
 
 
-
-
-
-
   <script>
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener('DOMContentLoaded', function() {
+        // Function to populate dropdowns based on selected code and endpoint
+        function populateDropdown(endpoint, code, dropdown, label) {
+            fetch(`https://psgc.gitlab.io/api/${endpoint}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Failed to fetch ${label}.`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const dropdownElement = document.getElementById(dropdown);
+                    const selectedValue = dropdownElement.getAttribute('data-selected');
+                    
+                    // Check if the dropdown already has options or if there is a selected value
+                    if (dropdownElement.options.length === 0 && !selectedValue) {
+                        // Add default option "Please select" for all dropdowns
+                        const defaultOption = document.createElement('option');
+                        defaultOption.value = '';
+                        defaultOption.textContent = `Please select ${label}`;
+                        defaultOption.selected = true;
+                        dropdownElement.appendChild(defaultOption);
+                    }
+                    if (Array.isArray(data) && data.length > 0) {
+                        data.sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically
+                        data.forEach(item => {
+                            const option = document.createElement('option');
+                            option.value = item.code;
+                            option.textContent = item.name;
+                            if (selectedValue === item.name) {
+                                option.selected = true;
+                            }
+                            dropdownElement.appendChild(option);
+                        });
+                    } else {
+                        throw new Error(`Invalid response format for ${label}.`);
+                    }
+                })
+                .catch(error => console.error(`Error fetching ${label}:`, error));
+        }
+
+        // Initialize province dropdown on page load
+        populateDropdown('provinces', '', 'province', 'provinces');
+
+        // Event listener for province selection
+        document.getElementById('province').addEventListener('change', function() {
+            const selectedProvinceCode = this.value;
+            populateDropdown(`provinces/${selectedProvinceCode}/cities-municipalities`, '', 'city', 'cities');
+        });
+
+        // Event listener for city/municipality selection
+        document.getElementById('city').addEventListener('change', function() {
+            const selectedCityCode = this.value;
+            populateDropdown(`cities/${selectedCityCode}/barangays`, '', 'barangay', 'barangays');
+        });
+    });
+
+</script>
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
       const toggleUnlock = document.getElementById("toggleUnlock");
+      const provinceInput = document.getElementById("province");
       const cityInput = document.getElementById("city");
+      const barangayInput = document.getElementById("barangay");
       const addressTextarea = document.getElementById("address");
       const fullnameInput = document.getElementById("fullname");
       const phoneinput = document.getElementById("phone");
@@ -99,79 +194,91 @@
 
       let isEditable = false;
 
+      // Lock all dropdowns initially
+      provinceInput.setAttribute("disabled", "true");
+      cityInput.setAttribute("disabled", "true");
+      barangayInput.setAttribute("disabled", "true");
+
       toggleUnlock.addEventListener("click", function() {
-        const inputsToToggle = [cityInput, addressTextarea, fullnameInput, phoneinput, genderInput];
+          const dropdownsToToggle = [provinceInput, cityInput, barangayInput];
+          const inputsToToggle = [addressTextarea, fullnameInput, phoneinput, genderInput];
 
-        if (isEditable) {
-        // Lock all fields
-        inputsToToggle.forEach(input => {
-          input.setAttribute("readonly", "true");
-          input.setAttribute("disabled", "true"); // Disable the gender input as well
-        });
+          if (isEditable) {
+              // Lock all dropdowns
+              dropdownsToToggle.forEach(dropdown => {
+                  dropdown.setAttribute("disabled", "true");
+              });
 
-        saveBtnContainer.style.display = "none";
-        toggleUnlock.textContent = "Click here to Edit";
-      } else {
-        // Unlock all fields
-        inputsToToggle.forEach(input => {
-          input.removeAttribute("readonly");
-          input.removeAttribute("disabled"); // Enable the gender input
-        });
+              // Lock other inputs
+              inputsToToggle.forEach(input => {
+                  input.setAttribute("readonly", "true");
+                  input.setAttribute("disabled", "true");
+              });
 
-        saveBtnContainer.style.display = ""; // Show the Save button container
-        toggleUnlock.textContent = "Click here to lock";
-      }
-      isEditable = !isEditable; // Toggle state
-    });
-    });
-  </script>
+              saveBtnContainer.style.display = "none";
+              toggleUnlock.textContent = "Click here to Edit";
+          } else {
+              // Unlock all dropdowns
+              dropdownsToToggle.forEach(dropdown => {
+                  dropdown.removeAttribute("disabled");
+              });
+
+              // Unlock other inputs
+              inputsToToggle.forEach(input => {
+                  input.removeAttribute("readonly");
+                  input.removeAttribute("disabled");
+              });
+
+              saveBtnContainer.style.display = "";
+              toggleUnlock.textContent = "Click here to lock";
+          }
+          isEditable = !isEditable;
+      });
+  });
+</script>
 
 
-  <script type="text/javascript">
-    document.getElementById('myForm').addEventListener('submit', function(event) {
+
+<script type="text/javascript">
+  document.getElementById('myForm').addEventListener('submit', function(event) {
       event.preventDefault();
 
+      const fullname = document.getElementById('fullname').value;
+      const email = document.getElementById('email').value;
+      const gender = document.getElementById('gender').value;
+      const phoneNumber = document.getElementById('phone').value;
+      const city = document.getElementById('city').options[document.getElementById('city').selectedIndex].text;
+      const streetOrHouseNumber = document.getElementById('address').value;
+      const province = document.getElementById('province').options[document.getElementById('province').selectedIndex].text;
+      const barangay = document.getElementById('barangay').options[document.getElementById('barangay').selectedIndex].text;
 
-        const fullname = document.getElementById('fullname').value;
-        const email = document.getElementById('email').value;
-        const gender = document.getElementById('gender').value;
-        const phoneNumber = document.getElementById('phone').value;
-        const city = document.getElementById('city').value;
-        const streetOrHouseNumber = document.getElementById('address').value;
-
-
-
-        $.ajax({
+      $.ajax({
           url: '/update_user',
           type: 'POST',
           data: {
-          
-            'fullname': fullname,
-            'email': email,
-            'gender': gender,
-            'phoneNumber': phoneNumber,
-            'city': city,
-            'streetOrHouseNumber': streetOrHouseNumber
+              'fullname': fullname,
+              'email': email,
+              'gender': gender,
+              'phoneNumber': phoneNumber,
+              'city': city,
+              'streetOrHouseNumber': streetOrHouseNumber,
+              'province': province,
+              'barangay': barangay
           },
           dataType: 'json',
           success: function(data) {
-
-    if (data === 1) {
-            location.reload();
-          } else {
-            alert("Error");
-          }
-
+              if (data.success) {
+                  location.reload();
+              } else {
+                  alert("Error updating user information.");
               }
-            });
+          },
+          error: function() {
+              alert("Error updating user information.");
+          }
       });
-
-    
-    </script>
-
-
-
-
+  });
+</script>
 
 
     {% endblock %}

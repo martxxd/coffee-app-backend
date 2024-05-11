@@ -78,6 +78,7 @@
          <input type="email" id="email" name="email" required class="input">
          <label for="password">Password</label>
          <input type="password" id="password" name="password" required class="input">
+         <p id="error-message" class="error-message" style="color: red;"></p>
          <div class="remember-me">
           <input type="checkbox" id="remember">
           <label for="remember">Remember me</label>
@@ -114,33 +115,35 @@
 <script src="{{ url_for('static',filename='vendor/jquery/jquery.min.js')}}"></script>
 <script  src="{{ url_for('static',filename='sinout/script.js')}}"></script>
 <script>
-  document.getElementById('myForm').addEventListener('submit', function(event) {
-  event.preventDefault(); 
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  $.ajax({
-    url: '/login',
-    type: 'POST',
-    data: {
-      'email': email,
-      'password': password,
-    },
-    dataType: 'json',
-    success: function(data) {
-      if (data === 1) {
-        $('#loadingModal').modal('show');
-        changeImageAfterDelay();
-      } else {
-        $('#password').after('<p style="color:red;">Incorrect email or password</p>');
-      }
-    },
-    error: function() {
-      // Handle error if AJAX request fails
-      $('#password').after('<p style="color:red;">An error occurred. Please try again later.</p>');
-    }
-  });
+document.getElementById('myForm').addEventListener('submit', function(event) {
+    event.preventDefault(); 
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    $.ajax({
+        url: '/login',
+        type: 'POST',
+        data: {
+            'email': email,
+            'password': password,
+        },
+        dataType: 'json',
+        success: function(data) {
+            if (data.status === 'success') {
+                if (data.admin) {
+                    window.location.href = '/dashboard_admin';
+                } else {
+                    window.location.href = '/';
+                }
+            } else {
+                // Display error message
+                document.getElementById('error-message').innerText = data.message;
+            }
+        },
+        error: function() {
+            console.log('An error occurred. Please try again later.');
+        }
+    });
 });
-
 function delay(milliseconds) {
   return new Promise(function (resolve) {
     setTimeout(resolve, milliseconds);
