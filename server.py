@@ -109,7 +109,7 @@ def signin():
             else:
                 return jsonify({'status': 'success', 'admin': False})  # Return JSON response for regular user
         else:
-            return jsonify({'status': 'error', 'message': 'Invalid credentials'})  # Return JSON response for invalid credentials
+           return jsonify({'status': 'error', 'message': 'Invalid email or password'})
 
     return render_template('signin.html', invalid_input=False)
 
