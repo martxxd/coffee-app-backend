@@ -3,6 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import and_
+from sqlalchemy.orm import Session
 from functools import wraps
 import os, json
 from datetime import datetime
@@ -33,6 +34,8 @@ class User(db.Model):
     phoneNumber = db.Column(db.String(60), nullable=True)
     city = db.Column(db.String(60), nullable=True)
     streetOrHouseNumber = db.Column(db.String(60), nullable=True)
+    province = db.Column(db.String(60), nullable=True)
+    barangay = db.Column(db.String(60), nullable=True) 
     create_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     update_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     is_admin = db.Column(db.Boolean, default=False)
@@ -136,7 +139,7 @@ def signup():
              # If gender is "Other", store the specified text in the database
             if gender == 'Other':
                 gender = request.form['otherText']
-                
+
             hashed_password = generate_password_hash(password)
             new_user = User(fullname=fullname, email=email, gender=gender, password=hashed_password,
                             phoneNumber=phoneNumber, city=city, streetOrHouseNumber=streetOrHouseNumber,
@@ -151,7 +154,7 @@ def signup():
 @app.route('/update_user', methods=['POST'])
 def update_user():
     user_id = session['id']
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     if user:
         user.fullname = request.form['fullname']
         user.email = request.form['email']
@@ -159,15 +162,17 @@ def update_user():
         user.phoneNumber = request.form['phoneNumber']
         user.city = request.form['city']
         user.streetOrHouseNumber = request.form['streetOrHouseNumber']
+        user.province = request.form['province']
+        user.barangay = request.form['barangay']
         
         # Check if gender is "Other" and update otherText field accordingly
         if user.gender == 'Other':
             user.otherText = request.form.get('otherText', '')  # Get value from form or empty string if not provided
 
         db.session.commit()
-        return "1"  # Success response
+        return jsonify({"success": True})  # Success response as JSON
     else:
-        return "User not found"  # Error response if user not found
+        return jsonify({"error": "User not found"})  # Error response as JSON
 
 @app.route('/logout', methods=['POST'])
 def logout():
