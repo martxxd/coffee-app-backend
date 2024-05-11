@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Head content here -->
+</head>
+<body style="background-color: black">
+
+  {% block navbar %}
+    {% include 'dashboard.html' %}
+  {% endblock %}
+
+  <!-- Main content specific to each management page goes here -->
+  {% block body %}
+    <!-- Content specific to each management page goes here -->
+  {% endblock %}
+
+  <!-- Other sections and scripts -->
+</body>
+</html>

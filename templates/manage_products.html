@@ -1,0 +1,159 @@
+{% extends "dashboard.html" %}
+{% block title %}Manage Products{% endblock %}
+
+{% block navbar %}
+    {{ super() }} <!-- Include content from the parent template -->
+    <a href="/add_prod" class="btn btn-primary" style="margin-top: 20px; margin-left: 20px;">Add Product</a> <!-- Adjusted margin-left -->
+{% endblock %}
+
+{% block body %}
+    <div class="container" data-aos="fade-up" style="margin-top: 100px; margin-bottom: 100px">
+        {% for product in products %}
+        <div class="row mt-3">
+            <div class="col-lg-3" style="text-align: right;">
+                <img src="{{ url_for('static', filename='assets/img/' + product.piamge) }}" alt="product" style="width: 250px; height: 250px; border-radius: 50px 0px 0px 50px;">
+            </div>
+            <div class="col-lg-6">
+                <h1 style="font-family: arial; font-weight: bold; color: white">{{ product.pName }}</h1>
+                <p style="color: white">{{ product.pDesc }}</p>
+                <div class="row">
+                    <div class="col-lg-6" style="margin-top: 2px; font-size: 30px">
+                        <p style="color: white">₱{{ product.pPrice }}</p>
+                    </div>
+                    <div class="col-lg-6" style="text-align: right;">
+                        <button type="button" class="btn btn-primary edit-btn" data-toggle="modal" data-target="#editModal" data-productid="{{ product.id }}">Edit</button>
+                        <form id="deleteForm" action="/remove_product/{{ product.id }}" method="POST" style="display: inline;">
+                            <button type="button" class="btn btn-danger" onclick="confirmDelete();">Remove</button>
+                        </form>                     
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="container" data-aos="fade-up" style="margin-top: 100px; margin-bottom: 100px">
+        <div class="row">
+            <div class="col">
+                <a href="/add_prod" class="btn btn-primary float-right" style="margin-top: -50px;">Add Product</a>
+            </div>
+        </div>
+    </div>
+
+<!-- Add a modal for editing -->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document"> <!-- Add modal-dialog-centered class -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Edit Product</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="editForm" action="#" method="POST">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="editProductName">Product Name</label>
+                        <input type="text" class="form-control" id="editProductName" name="productName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editProductDescription">Product Description</label>
+                        <textarea class="form-control" id="editProductDescription" name="productDescription" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="editProductPrice">Product Price</label>
+                        <input type="number" class="form-control" id="editProductPrice" name="productPrice" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- Add a modal for confirmation -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to remove this product?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closeModal();">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn" onclick="confirmDeleteAction();">Confirm Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // JavaScript to handle editing
+    document.addEventListener('DOMContentLoaded', function () {
+        const editButtons = document.querySelectorAll('.edit-btn');
+        const editForm = document.getElementById('editForm');
+        const editProductName = document.getElementById('editProductName');
+        const editProductDescription = document.getElementById('editProductDescription');
+        const editProductPrice = document.getElementById('editProductPrice');
+
+        editButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const productId = this.getAttribute('data-productid');
+
+                // Fetch product details from the server
+                fetch(`/product_details/${productId}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Log fetched data for debugging
+                        console.log('Fetched product details:', data);
+
+                        // Populate form fields with product details
+                        editProductName.value = data.pName;
+                        editProductDescription.value = data.pDesc;
+                        editProductPrice.value = data.pPrice;
+                        editForm.action = `/edit_product/${productId}`; // Set form action dynamically
+                    })
+                    .catch(error => console.error('Error fetching product details:', error));
+            });
+        });
+
+    });
+</script>
+
+<script>
+    // JavaScript to handle delete confirmation
+    function confirmDelete() {
+        $('#deleteModal').modal('show'); // Show the confirmation modal
+    }
+
+   // Function to close the modal window
+    function closeModal() {
+    $('#deleteModal').modal('hide'); // Hide the modal
+}
+
+
+    // Function to handle confirm delete action
+    function confirmDeleteAction() {
+        var deleteForm = document.querySelector('#deleteForm');
+        var productId = $('#confirmDeleteBtn').data('productid');
+        deleteForm.action = '/remove_product/' + productId;
+        deleteForm.submit(); // Submit the form with the updated action
+    }
+</script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+
+{% endblock %}

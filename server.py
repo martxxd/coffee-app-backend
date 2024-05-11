@@ -183,9 +183,51 @@ def logout():
 
 '''
 ==========================================================
-Routes
+Admin Side
 ===========================================================
 '''
+
+@app.route('/product_details/<int:product_id>')
+def product_details(product_id):
+    # Query the Product table to get the product details
+    product = Product.query.get_or_404(product_id)
+
+    # Prepare the product details as a dictionary
+    product_details = {
+        'id': product.id,
+        'pName': product.pName,
+        'pDesc': product.pDesc,
+        'pPrice': product.pPrice,
+        'piamge': product.piamge,
+        'create_at': product.create_at,
+        'update_at': product.update_at
+    }
+
+    # Return the product details as JSON
+    return jsonify(product_details)
+
+@app.route('/edit_product/<int:product_id>', methods=['GET', 'POST'])
+def edit_product(product_id):
+    product = Product.query.get_or_404(product_id)
+
+    if request.method == 'POST':
+        product.pName = request.form['productName']
+        product.pDesc = request.form['productDescription']
+        product.pPrice = request.form['productPrice']
+        db.session.commit()
+        flash('Product updated successfully!', 'success')
+        return redirect(url_for('manage_products'))
+
+    return render_template('manage_products.html', product=product)
+
+
+@app.route('/remove_product/<int:product_id>', methods=['POST'])
+def remove_product(product_id):
+    product = Product.query.get_or_404(product_id)
+    db.session.delete(product)
+    db.session.commit()
+    flash('Product removed successfully!', 'success')
+    return redirect(url_for('manage_products'))
 
 @app.route('/dashboard_admin')
 @login_required
@@ -199,13 +241,23 @@ def dashboard_admin():
 def manage_orders():
     return render_template('manage_orders.html')
 
-@app.route('/manage_payments')
-def manage_payments():
-    return render_template('manage_payments.html')
+@app.route('/manage_products')
+def manage_products():
+    # Query all products from the Product table
+    products = Product.query.all()
+    return render_template('manage_products.html', products=products)
+
 
 @app.route('/manage_users')
 def manage_users():
     return render_template('manage_users.html')
+
+'''
+==========================================================
+Routes
+===========================================================
+'''
+
 
 @app.route('/', methods=['GET'])
 def home():
