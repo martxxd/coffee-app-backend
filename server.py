@@ -50,10 +50,11 @@ class Product(db.Model):
     pDesc = db.Column(db.String(120), nullable=False) 
     pPrice = db.Column(db.String(60), nullable=False)
     piamge = db.Column(db.String(60), nullable=False)
+    category = db.Column(db.String(50), nullable=False)
     create_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     update_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     def __repr__(self):
-        return f"Product('{self.pName}', '{self.pDesc}', '{self.pPrice}', '{self.piamge}')"
+        return f"Product('{self.pName}', '{self.pDesc}', '{self.pPrice}', '{self.piamge}', '{self.category}')"
 
 
 
@@ -187,23 +188,50 @@ Admin Side
 ===========================================================
 '''
 
+@app.route('/categories', methods=['GET'])
+def categories():
+    categories = db.session.query(Product.category).distinct().all()
+    
+    category_names = [category[0] for category in categories]
+    
+    return jsonify(category_names)
+
+
+@app.route('/products/category/<category>', methods=['GET'])
+@login_required
+def product_by_category(category):
+    categories = ["Hot Coffee", "Cold Coffee", "Frappuccino"]
+    if category in categories:
+        products = Product.query.filter_by(category=category).all()
+        product_details = [{
+            'id': product.id,
+            'pName': product.pName,
+            'pDesc': product.pDesc,
+            'pPrice': product.pPrice,
+            'piamge': product.piamge,
+            'category': product.category,
+            'create_at': product.create_at,
+            'update_at': product.update_at
+        } for product in products]
+        return jsonify(product_details)
+    else:
+        return jsonify([])
+
 @app.route('/product_details/<int:product_id>')
 def product_details(product_id):
-    # Query the Product table to get the product details
     product = Product.query.get_or_404(product_id)
 
-    # Prepare the product details as a dictionary
     product_details = {
         'id': product.id,
         'pName': product.pName,
         'pDesc': product.pDesc,
         'pPrice': product.pPrice,
         'piamge': product.piamge,
+        'category': product.category,
         'create_at': product.create_at,
         'update_at': product.update_at
     }
 
-    # Return the product details as JSON
     return jsonify(product_details)
 
 @app.route('/edit_product/<int:product_id>', methods=['GET', 'POST'])
