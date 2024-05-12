@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import and_
+from sqlalchemy import and_, desc
 from sqlalchemy.orm import Session
 from functools import wraps
 import os, json
@@ -267,8 +267,14 @@ def dashboard_admin():
 
 @app.route('/manage_orders')
 def manage_orders():
-    return render_template('manage_orders.html')
-    
+    # Fetch cart items with user's full name sorted by creation date (newest first)
+    cart_items = db.session.query(CartItem, User.fullname)\
+                    .join(User, CartItem.user_id == User.id)\
+                    .order_by(desc(CartItem.create_at))\
+                    .all()
+    return render_template('manage_orders.html', cart_items=cart_items)
+
+
 @app.route('/manage_products')
 def manage_products():
     # Query all products from the Product table
