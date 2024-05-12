@@ -268,12 +268,13 @@ def dashboard_admin():
 @app.route('/manage_orders')
 def manage_orders():
     return render_template('manage_orders.html')
-
+    
 @app.route('/manage_products')
 def manage_products():
     # Query all products from the Product table
     products = Product.query.all()
     return render_template('manage_products.html', products=products)
+
 
 
 @app.route('/manage_users')
@@ -325,22 +326,36 @@ def product_add():
         pName = request.form['productName']
         pDesc = request.form['productDescription']
         pPrice = request.form['productPrice']
+        pCategory = request.form['productCategory']  # Get selected category from the form
+
+        # Check if file is uploaded
         if 'file' not in request.files:
             flash('No file part')
             return redirect(request.url)
+        
         file = request.files['file']
+        
+        # Check if file is selected
         if file.filename == '':
             flash('No selected file')
             return redirect(request.url)
+        
+        # Check if file is allowed
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            new_product = Product(pName=pName, pDesc=pDesc, pPrice=pPrice, piamge=filename)
+            
+            # Create new product with category
+            new_product = Product(pName=pName, pDesc=pDesc, pPrice=pPrice, piamge=filename, category=pCategory)
             db.session.add(new_product)
             db.session.commit()
-            return redirect(url_for('product'))
-    return render_template('reg_product.html')
-
+            
+            return redirect(url_for('manage_products'))
+    
+    # Fetch categories to populate the dropdown menu
+    categories = Product.query.with_entities(Product.category).distinct().all()
+    
+    return render_template('reg_product.html', categories=categories)
 
 
 @app.route('/checkout', methods=['GET'])
