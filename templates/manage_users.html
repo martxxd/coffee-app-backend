@@ -1,19 +1,45 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <!-- Head content here -->
-</head>
-<body style="background-color: black">
+{% extends "dashboard.html" %}
+{% block title %}Manage Users{% endblock %}
 
-  {% block navbar %}
-    {% include 'dashboard.html' %}
-  {% endblock %}
-
-  <!-- Main content specific to each management page goes here -->
-  {% block body %}
-    <!-- Content specific to each management page goes here -->
-  {% endblock %}
-
-  <!-- Other sections and scripts -->
-</body>
-</html>
+{% block navbar %}
+    {{ super() }} 
+{% endblock %}
+{% block body %}
+<link rel="stylesheet" type="text/css" href="/static/musers.css">
+<div class="container" style="margin-top: 100px;">
+    <h1 style="color: white; text-align: center; margin-top: 10px;">List of Users</h1>
+    <div class="custom-table">
+      <table>
+          <thead>
+              <tr>
+                  <th>Full Name</th>
+                  <th>Gender</th>
+                  <th>Phone Number</th>
+                  <th>Email</th>
+                  <th>Street or House Number</th>
+                  <th>Barangay</th>
+                  <th>City</th>
+                  <th>Province</th>
+                  <th>Created At</th>
+              </tr>
+          </thead>
+          <tbody>
+              {% for user in users|sort(attribute='create_at', reverse=true) %}
+                  <tr>
+                      <td>{{ user.fullname }}</td>
+                      <td>{{ user.gender }}</td>
+                      <td>{{ user.phoneNumber }}</td>
+                      <td>{{ user.email }}</td>
+                      <td>{{ user.streetOrHouseNumber }}</td>
+                      <td>{{ user.barangay }}</td>
+                      <td>{{ user.city }}</td>
+                      <td>{{ user.province }}</td>
+                      <td>{{ user.create_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                  </tr>
+              {% endfor %}
+          </tbody>
+      </table>
+  </div>
+  
+</div>
+{% endblock %}

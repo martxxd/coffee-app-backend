@@ -285,7 +285,9 @@ def manage_products():
 
 @app.route('/manage_users')
 def manage_users():
-    return render_template('manage_users.html')
+    # Query regular users (non-admins)
+    regular_users = User.query.filter_by(is_admin=False).all()
+    return render_template('manage_users.html', users=regular_users)
 
 '''
 ==========================================================

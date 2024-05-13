@@ -1,0 +1,20 @@
+.custom-table {
+    color: rgb(255, 255, 255);
+    background-color: rgb(129, 95, 95);
+    padding: 10px;
+}
+
+.custom-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.custom-table th,
+.custom-table td {
+    border: 1px solid white;
+    padding: 8px;
+}
+
+.custom-table thead {
+    background-color: rgb(129, 95, 95);
+}
