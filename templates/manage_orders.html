@@ -1,41 +1,29 @@
 {% extends "dashboard.html" %}
-{% block title %}Manage Products{% endblock %}
+{% block title %}Manage Orders{% endblock %}
 
 {% block navbar %}
     {{ super() }} 
 {% endblock %}
+
 {% block body %}
   <div class="container" style="margin-top: 100px;">
     <h1 style="color: white; text-align: center; margin-top: 10px;">Order Logs</h1>
-    <div style="overflow-x:auto;">
-      <table class="table table-striped" style="margin: auto; color: white !important; background-color: black !important;">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Full Name</th>
-                <th>Product Name</th>
-                <th>Price</th>
-                <th>Quantity</th>
-                <th>Paid</th>
-                <th>Delivered</th>
-                <th>Date Created</th>
-            </tr>
-        </thead>
-        <tbody style="color: white !important; background-color: black !important;">
-            {% for cart_item, fullname in cart_items|sort(attribute='create_at', reverse=true) %}
-            <tr>
-                <td>{{ cart_item.id }}</td>
-                <td>{{ fullname }}</td>
-                <td>{{ cart_item.name }}</td>
-                <td>{{ cart_item.price }}</td>
-                <td>{{ cart_item.quantity }}</td>
-                <td>{{ "Yes" if cart_item.paid else "No" }}</td>
-                <td>{{ "Yes" if cart_item.delivered else "No" }}</td>
-                <td>{{ cart_item.create_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-            </tr>
-            {% endfor %}          
-        </tbody>
-    </table>
+    <div style="color: white; background-color: black; padding: 10px;">
+      {% for cart_item, fullname in cart_items|sort(attribute='create_at', reverse=true) %}
+          <div style="border-bottom: 1px solid white; margin-bottom: 20px;">
+              <div style="padding: 10px;">
+                  <div><strong style="margin-right: 5px;">Customer Name:</strong> {{ fullname }}</div>
+                  <div><strong style="margin-right: 5px;">Product Name:</strong> {{ cart_item.name }}</div>
+                  <div><strong style="margin-right: 5px;">Price:</strong> ₱{{ cart_item.price }}</div>
+                  <div><strong style="margin-right: 5px;">Quantity:</strong> {{ cart_item.quantity }}</div>
+                  <div><strong style="margin-right: 5px;">Paid:</strong> {{ "Yes" if cart_item.paid else "No" }}</div>
+                  <div><strong style="margin-right: 5px;">Delivered:</strong> {{ "Yes" if cart_item.delivered else "No" }}</div>
+                  <div><strong style="margin-right: 5px;">Date Ordered:</strong> {{ cart_item.create_at.strftime('%Y-%m-%d %H:%M:%S') }}</div>
+              </div>
+          </div>
+      {% endfor %}
+  </div>
+</div>
     
     
     
