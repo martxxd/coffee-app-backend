@@ -22,6 +22,16 @@
                 <label for="productDescription" class="form-label">Product Description</label>
                 <textarea class="form-control" id="productDescription" name="productDescription" rows="4" required></textarea>
             </div>
+             <!-- New dropdown for categories -->
+             <div class="mb-3">
+                <label for="productCategory" class="form-label">Product Category</label>
+                <select class="form-select" id="productCategory" name="productCategory" required>
+                    <option value="" selected disabled>Please select a category</option>
+                    {% for category in categories %}
+                        <option value="{{ category[0] }}">{{ category[0] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
             <button type="submit" class="btn btn-primary">Add Product</button>
 
         </form>

@@ -22,10 +22,11 @@
                     </div>
                     <div class="col-lg-6" style="text-align: right;">
                         <button type="button" class="btn btn-primary edit-btn" data-toggle="modal" data-target="#editModal" data-productid="{{ product.id }}">Edit</button>
-                        <form id="deleteForm" action="/remove_product/{{ product.id }}" method="POST" style="display: inline;">
-                            <button type="button" class="btn btn-danger" onclick="confirmDelete();">Remove</button>
+                        <form class="delete-form" action="/remove_product/{{ product.id }}" method="POST" style="display: inline;">
+                            <button type="button" class="btn btn-danger" onclick="confirmDelete('{{ product.id }}');">Remove</button>
                         </form>                     
                     </div>
+                    
                 </div>
             </div>
         </div>
@@ -89,11 +90,13 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closeModal();">Cancel</button>
+                <!-- Call confirmDeleteAction() when clicked -->
                 <button type="button" class="btn btn-danger" id="confirmDeleteBtn" onclick="confirmDeleteAction();">Confirm Delete</button>
-            </div>
+            </div>            
         </div>
     </div>
 </div>
+
 
 <script>
     // JavaScript to handle editing
@@ -134,25 +137,40 @@
 </script>
 
 <script>
-    // JavaScript to handle delete confirmation
-    function confirmDelete() {
+    // Function to handle delete confirmation
+    function confirmDelete(productId) {
         $('#deleteModal').modal('show'); // Show the confirmation modal
+        // Set the productId as a data attribute of the "Confirm Delete" button
+        $('#confirmDeleteBtn').data('productid', productId);
     }
 
-   // Function to close the modal window
+    // Function to close the modal window
     function closeModal() {
-    $('#deleteModal').modal('hide'); // Hide the modal
-}
-
+        $('#deleteModal').modal('hide'); // Hide the modal
+    }
 
     // Function to handle confirm delete action
     function confirmDeleteAction() {
-        var deleteForm = document.querySelector('#deleteForm');
         var productId = $('#confirmDeleteBtn').data('productid');
-        deleteForm.action = '/remove_product/' + productId;
-        deleteForm.submit(); // Submit the form with the updated action
+        // Send a POST request to the server to delete the product
+        $.ajax({
+            url: '/remove_product/' + productId,
+            type: 'POST',
+            success: function(response) {
+                console.log(response); // Log the server response
+                // Optionally, you can reload the page or perform any other actions after successful deletion
+                window.location.reload(); // Reload the page
+            },
+            error: function(xhr, status, error) {
+                console.error(xhr.responseText); // Log any errors
+            }
+        });
+        closeModal();
     }
 </script>
+
+
+
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
 

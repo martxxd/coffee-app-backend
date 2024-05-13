@@ -1,33 +1,42 @@
 {% extends "master.html" %}
 {% block body %}
 	<div class="container" data-aos="fade-up" style="margin-top: 100px; margin-bottom: 100px" > 
-		{% for product in products %}
-		<div class="row mt-3">
-			<div class="col-lg-3" style="text-align: right;">
-			<img src="{{ url_for('static', filename='assets/img/' + product.piamge) }}" alt="product" style="width: 250px; height: 250px; border-radius: 50px 0px 0px 50px;">
+		<div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="categoryDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Categories
+            </button>
+			<div id="productList"></div>
+			<div class="dropdown-menu" aria-labelledby="categoryDropdown">
+				{% for category in categories %}
+				{% if category in ['Hot Coffee', 'Cold Coffee', 'Frappuccino'] %}
+				<a class="dropdown-item" href="#" onclick="filterProducts('{{ category }}')">{{ category }}</a>
+			{% endif %}
+		{% endfor %}
 			</div>
-			<div class="col-lg-6" >
-				<h1 style="font-family: arial; font-weight: bold; color: white">{{ product.pName }}</h1>
-				<p style="color: white">{{ product.pDesc }}</p>
-				<div class="row">
-					<div class="col-lg-6" style="margin-top: 2px; font-size: 30px">
-						<p style="color: white">₱{{ product.pPrice }}</p>
-					</div>
-					<div class="col-lg-6" style="text-align: right;">
-						<!-- <a href="#" class="btn-get-starteds animate__animated animate__fadeInUp scrollto" style="margin-top: 0px" >Add to Cart</a> -->
-
-						<a href="#" class="btn-get-starteds animate__animated animate__fadeInUp scrollto" onclick="addToCart({{ product.id }})">Add to Cart</a>
-
+        </div>
+		{% for product in products %}
+			<div class="row mt-3 initial-product"> <!-- Add class "initial-product" here -->
+				<div class="col-lg-3" style="text-align: right;">
+					<img src="{{ url_for('static', filename='assets/img/' + product.piamge) }}" alt="product" style="width: 250px; height: 250px; border-radius: 50px 0px 0px 50px;">
+				</div>
+				<div class="col-lg-6">
+					<h1 style="font-family: arial; font-weight: bold; color: white">{{ product.pName }}</h1>
+					<p style="color: white">{{ product.pDesc }}</p>
+					<div class="row">
+						<div class="col-lg-6" style="margin-top: 2px; font-size: 30px">
+							<p style="color: white">₱{{ product.pPrice }}</p>
+						</div>
+						<div class="col-lg-6" style="text-align: right;">
+							<a href="#" class="btn-get-starteds animate__animated animate__fadeInUp scrollto" onclick="addToCart('{{ product.id }}')">Add to Cart</a>
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
- {% endfor %}
+		{% endfor %}
+
     </div>
 
-
-
-    <script>
+<script>
     function addToCart(productId) {
         fetch(`/add_to_cart/${productId}`, {
             method: 'POST',
@@ -45,4 +54,73 @@
         });
     }
 </script>
+
+	<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/categories')
+            .then(response => response.json())
+            .then(categories => {
+                const dropdownMenu = document.querySelector('.dropdown-menu');
+                categories.forEach(category => {
+                    const option = document.createElement('a');
+                    option.classList.add('dropdown-item');
+                    option.href = '#';  // Replace '#' with the appropriate URL
+                    option.textContent = category;
+                    option.addEventListener('click', function(event) {
+                        event.preventDefault(); // Prevent default anchor behavior
+                        filterProducts(category);
+                    });
+                    dropdownMenu.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching categories:', error);
+            });
+    });
+	</script>
+
+	<script>
+		function filterProducts(category) {
+			// Hide initial products
+			const initialProducts = document.querySelectorAll('.initial-product');
+			initialProducts.forEach(product => {
+				product.style.display = 'none';
+			});
+	
+			// Fetch and display products for the selected category
+			fetch(`/products/category/${category}`)
+				.then(response => response.json())
+				.then(data => {
+					document.getElementById('productList').innerHTML = ''; // Clear previous product list
+					data.forEach(product => {
+						// Create HTML elements for each product and append them to productList div
+						const productElement = document.createElement('div');
+						productElement.className = 'row mt-3'; // Add the class to match the styling
+						productElement.innerHTML = `
+							<div class="col-lg-3" style="text-align: right;">
+								<img src="/static/assets/img/${product.piamge}" alt="product" style="width: 250px; height: 250px; border-radius: 50px 0px 0px 50px;">
+							</div>
+							<div class="col-lg-6">
+								<h1 style="font-family: arial; font-weight: bold; color: white">${product.pName}</h1>
+								<p style="color: white">${product.pDesc}</p>
+								<div class="row">
+									<div class="col-lg-6" style="margin-top: 2px; font-size: 30px">
+										<p style="color: white">₱${product.pPrice}</p>
+									</div>
+									<div class="col-lg-6" style="text-align: right;">
+										<a href="#" class="btn-get-starteds animate__animated animate__fadeInUp scrollto" onclick="addToCart(${product.id})">Add to Cart</a>
+									</div>
+								</div>
+							</div>`;
+						document.getElementById('productList').appendChild(productElement);
+					});
+				})
+				.catch(error => {
+					console.error('Error fetching products:', error);
+				});
+		}
+	</script>
+	
+
+
 {% endblock %}

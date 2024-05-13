@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import and_
+from sqlalchemy import and_, desc
 from sqlalchemy.orm import Session
 from functools import wraps
 import os, json
@@ -50,10 +50,11 @@ class Product(db.Model):
     pDesc = db.Column(db.String(120), nullable=False) 
     pPrice = db.Column(db.String(60), nullable=False)
     piamge = db.Column(db.String(60), nullable=False)
+    category = db.Column(db.String(50), nullable=False)
     create_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     update_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     def __repr__(self):
-        return f"Product('{self.pName}', '{self.pDesc}', '{self.pPrice}', '{self.piamge}')"
+        return f"Product('{self.pName}', '{self.pDesc}', '{self.pPrice}', '{self.piamge}', '{self.category}')"
 
 
 
@@ -187,23 +188,50 @@ Admin Side
 ===========================================================
 '''
 
+@app.route('/categories', methods=['GET'])
+def categories():
+    categories = db.session.query(Product.category).distinct().all()
+    
+    category_names = [category[0] for category in categories]
+    
+    return jsonify(category_names)
+
+
+@app.route('/products/category/<category>', methods=['GET'])
+@login_required
+def product_by_category(category):
+    categories = ["Hot Coffee", "Cold Coffee", "Frappuccino"]
+    if category in categories:
+        products = Product.query.filter_by(category=category).all()
+        product_details = [{
+            'id': product.id,
+            'pName': product.pName,
+            'pDesc': product.pDesc,
+            'pPrice': product.pPrice,
+            'piamge': product.piamge,
+            'category': product.category,
+            'create_at': product.create_at,
+            'update_at': product.update_at
+        } for product in products]
+        return jsonify(product_details)
+    else:
+        return jsonify([])
+
 @app.route('/product_details/<int:product_id>')
 def product_details(product_id):
-    # Query the Product table to get the product details
     product = Product.query.get_or_404(product_id)
 
-    # Prepare the product details as a dictionary
     product_details = {
         'id': product.id,
         'pName': product.pName,
         'pDesc': product.pDesc,
         'pPrice': product.pPrice,
         'piamge': product.piamge,
+        'category': product.category,
         'create_at': product.create_at,
         'update_at': product.update_at
     }
 
-    # Return the product details as JSON
     return jsonify(product_details)
 
 @app.route('/edit_product/<int:product_id>', methods=['GET', 'POST'])
@@ -239,7 +267,13 @@ def dashboard_admin():
 
 @app.route('/manage_orders')
 def manage_orders():
-    return render_template('manage_orders.html')
+    # Fetch cart items with user's full name sorted by creation date (newest first)
+    cart_items = db.session.query(CartItem, User.fullname)\
+                    .join(User, CartItem.user_id == User.id)\
+                    .order_by(desc(CartItem.create_at))\
+                    .all()
+    return render_template('manage_orders.html', cart_items=cart_items)
+
 
 @app.route('/manage_products')
 def manage_products():
@@ -248,9 +282,12 @@ def manage_products():
     return render_template('manage_products.html', products=products)
 
 
+
 @app.route('/manage_users')
 def manage_users():
-    return render_template('manage_users.html')
+    # Query regular users (non-admins)
+    regular_users = User.query.filter_by(is_admin=False).all()
+    return render_template('manage_users.html', users=regular_users)
 
 '''
 ==========================================================
@@ -297,22 +334,36 @@ def product_add():
         pName = request.form['productName']
         pDesc = request.form['productDescription']
         pPrice = request.form['productPrice']
+        pCategory = request.form['productCategory']  # Get selected category from the form
+
+        # Check if file is uploaded
         if 'file' not in request.files:
             flash('No file part')
             return redirect(request.url)
+        
         file = request.files['file']
+        
+        # Check if file is selected
         if file.filename == '':
             flash('No selected file')
             return redirect(request.url)
+        
+        # Check if file is allowed
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            new_product = Product(pName=pName, pDesc=pDesc, pPrice=pPrice, piamge=filename)
+            
+            # Create new product with category
+            new_product = Product(pName=pName, pDesc=pDesc, pPrice=pPrice, piamge=filename, category=pCategory)
             db.session.add(new_product)
             db.session.commit()
-            return redirect(url_for('product'))
-    return render_template('reg_product.html')
-
+            
+            return redirect(url_for('manage_products'))
+    
+    # Fetch categories to populate the dropdown menu
+    categories = Product.query.with_entities(Product.category).distinct().all()
+    
+    return render_template('reg_product.html', categories=categories)
 
 
 @app.route('/checkout', methods=['GET'])
