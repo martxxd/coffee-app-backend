@@ -151,11 +151,11 @@ def signup():
         else:
             return 'Passwords do not match. Please try again.'
     return render_template('signup.html')
-
 @app.route('/update_user', methods=['POST'])
 def update_user():
     user_id = session['id']
-    user = db.session.get(User, user_id)
+    user = User.query.get(user_id)  # Using get method to directly retrieve the user by ID
+
     if user:
         user.fullname = request.form['fullname']
         user.email = request.form['email']

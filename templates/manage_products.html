@@ -2,12 +2,12 @@
 {% block title %}Manage Products{% endblock %}
 
 {% block navbar %}
-    {{ super() }} <!-- Include content from the parent template -->
-    <a href="/add_prod" class="btn btn-primary" style="margin-top: 20px; margin-left: 20px;">Add Product</a> <!-- Adjusted margin-left -->
+    {{ super() }} 
 {% endblock %}
 
 {% block body %}
     <div class="container" data-aos="fade-up" style="margin-top: 100px; margin-bottom: 100px">
+        <a href="/add_prod" class="btn btn-primary" style="margin-top: 20px; margin-left: 20px;">Add Product</a> 
         {% for product in products %}
         <div class="row mt-3">
             <div class="col-lg-3" style="text-align: right;">
@@ -32,14 +32,6 @@
         </div>
         {% endfor %}
     </div>
-    <div class="container" data-aos="fade-up" style="margin-top: 100px; margin-bottom: 100px">
-        <div class="row">
-            <div class="col">
-                <a href="/add_prod" class="btn btn-primary float-right" style="margin-top: -50px;">Add Product</a>
-            </div>
-        </div>
-    </div>
-
 <!-- Add a modal for editing -->
 <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document"> <!-- Add modal-dialog-centered class -->
