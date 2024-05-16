@@ -1,43 +1,67 @@
 {% extends "dashboard.html" %}
-{% block title %}Manage Products{% endblock %}
+{% block title %}Manage Orders{% endblock %}
 
 {% block navbar %}
-    {{ super() }} 
+    {{ super() }}
 {% endblock %}
 
 {% block body %}
-<link rel="stylesheet" type="text/css" href="/static/musers.css">
-  <div class="container" style="margin-top: 100px;">
-      <h1 style="color: white; text-align: center; margin-top: 10px;">Order Logs</h1>
-      <div class="custom-table">
-        <table>
-            <thead>
-                <tr>
-                    <th>Full Name</th>
-                    <th>Product Name</th>
-                    <th>Price</th>
-                    <th>Quantity</th>
-                    <th>Paid</th>
-                    <th>Delivered</th>
-                    <th>Date Ordered</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for cart_item, fullname in cart_items|sort(attribute='create_at', reverse=true) %}
-                    <tr>
-                        <td>{{ fullname }}</td>
-                        <td>{{ cart_item.name }}</td>
-                        <td>{{ cart_item.price }}</td>
-                        <td>{{ cart_item.quantity }}</td>
-                        <td>{{ "Yes" if cart_item.paid else "No" }}</td>
-                        <td>{{ "Yes" if cart_item.delivered else "No" }}</td>
-                        <td>{{ cart_item.create_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-  </div>
-  
-  
-  {% endblock %}
+<link rel="stylesheet" type="text/css" href="/static/morder.css">
+<div class="container" style="margin-top: 100px;">
+    <h1 style="color: rgb(255, 255, 255); text-align: center; margin-top: 10px;">Order Logs</h1>
+    <div class="accordion" id="orderAccordion">
+        {% for receipt, data in orders_by_receipt.items() %}
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="heading{{ loop.index }}">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}" aria-expanded="true" aria-controls="collapse{{ loop.index }}">
+                    Order #{{ loop.revindex }}
+                </button>                    
+            </h2>
+            <div id="collapse{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="heading{{ loop.index }}" data-bs-parent="#orderAccordion">
+                <div class="accordion-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Product Name</th>
+                                <th>Quantity</th>
+                                <th>Product Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in data.orders %}
+                                <tr>
+                                    {% if loop.first %}
+                                    <td rowspan="{{ data.orders|length }}">{{ order.fullname }}</td>
+                                {% endif %}
+                                    <td>{{ order.product_name }}</td>
+                                    <td>{{ order.quantity }}</td>
+                                    <td>₱{{ order.product_price * order.quantity }}</td>
+                                </tr>
+                            {% endfor %}
+                            <tr>
+                                <td colspan="3"></td>
+                                <td>Total Price: ₱{{ data.total_price }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  $(document).ready(function() {
+    $('.dropdown-el').click(function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      $(this).toggleClass('expanded');
+      $('#'+$(e.target).attr('for')).prop('checked',true);
+    });
+    $(document).click(function() {
+      $('.dropdown-el').removeClass('expanded');
+    });
+  });
+</script>
+{% endblock %}

@@ -31,7 +31,7 @@
                         <label for="female" style="margin-right: 30px;">Female</label>
                         <input type="radio" id="other" name="gender" value="Other" style="margin-right: 5px;">
                         <label for="other" style="margin-right: 30px;">Other</label>
-                        <input type="text" id="otherText" name="otherText" style="display: none; width: 150px;" placeholder="Please specify">
+                        <input type="text" id="otherText" name="otherText" style="display: none; width: 150px; border: none;" placeholder="Please specify">
                     </div>                    
                     <label for="email">Email address</label>
                     <input type="email" id="email" name="email" required class="input" autocomplete="new-email">
@@ -68,6 +68,9 @@
             if (this.value === "Other") {
                 otherText.style.display = "inline-block";
                 otherText.setAttribute("required", "required");
+                            // Get the computed height of the text inputs and apply it to the "Other" text input
+            const inputHeight = document.getElementById('fname').offsetHeight;
+            otherText.style.height = inputHeight + "px";
             } else {
                 otherText.style.display = "none";
                 otherText.removeAttribute("required");

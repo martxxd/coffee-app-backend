@@ -2,9 +2,10 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import and_, desc
+from sqlalchemy import and_, desc, Column, Float, func
 from sqlalchemy.orm import Session
 from functools import wraps
+from collections import defaultdict
 import os, json
 from datetime import datetime
 from collections import defaultdict
@@ -67,6 +68,7 @@ class CartItem(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     paid = db.Column(db.Integer, nullable=False, default=False)
     recipt = db.Column(db.String(100), nullable=True, default=0)
+    total_price = Column(Float)
     delivered = db.Column(db.Integer, nullable=True, default=0)
     create_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     update_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
@@ -267,12 +269,28 @@ def dashboard_admin():
 
 @app.route('/manage_orders')
 def manage_orders():
-    # Fetch cart items with user's full name sorted by creation date (newest first)
+    # Fetch cart items with user's full name sorted by receipt number (newest first)
     cart_items = db.session.query(CartItem, User.fullname)\
                     .join(User, CartItem.user_id == User.id)\
-                    .order_by(desc(CartItem.create_at))\
+                    .order_by(desc(CartItem.recipt))\
                     .all()
-    return render_template('manage_orders.html', cart_items=cart_items)
+
+    # Group cart items by receipt number
+    orders_by_receipt = defaultdict(list)
+    for cart_item, fullname in cart_items:
+        orders_by_receipt[cart_item.recipt].append({
+            'fullname': fullname,
+            'product_name': cart_item.name,
+            'quantity': cart_item.quantity,
+            'product_price': cart_item.price
+        })
+
+    # Calculate total price for each receipt
+    for receipt, orders in orders_by_receipt.items():
+        total_price = sum(order['quantity'] * order['product_price'] for order in orders)
+        orders_by_receipt[receipt] = {'orders': orders, 'total_price': total_price}
+
+    return render_template('manage_orders.html', orders_by_receipt=orders_by_receipt)
 
 
 @app.route('/manage_products')
@@ -281,6 +299,18 @@ def manage_products():
     products = Product.query.all()
     return render_template('manage_products.html', products=products)
 
+@app.route('/update_quantity/<int:item_id>', methods=['POST'])
+def update_quantity(item_id):
+    new_quantity = int(request.json['quantity'])
+    cart_item = CartItem.query.get_or_404(item_id)
+    cart_item.quantity = new_quantity
+    
+    # Assuming each cart item has a price attribute, adjust this according to your data model
+    # Recalculate the total price for the item after updating the quantity
+    updated_price = cart_item.price * new_quantity
+    
+    db.session.commit()
+    return jsonify({'success': True, 'price': updated_price})
 
 
 @app.route('/manage_users')
@@ -381,12 +411,20 @@ def buyNow():
     user_id = session['id'] 
   
     cart_items = CartItem.query.filter(and_(CartItem.user_id == user_id, CartItem.paid == 0, CartItem.recipt == 0)).all()
+    total_price = 0  # Initialize total price
+    
+    # Calculate total price for each cart item and update total_price field
     for cart_item in cart_items:
+        total_price += cart_item.price * cart_item.quantity
         cart_item.paid = 1
         cart_item.recipt = recipt
+        cart_item.total_price = cart_item.price * cart_item.quantity  # Update total_price field
         db.session.commit()
+    
+    # After updating all cart items, commit the changes to the database
+    db.session.commit()
+    
     return jsonify({'Reciept': recipt})
-
 
 
 
@@ -426,20 +464,16 @@ def barista():
     
     cart_items = CartItem.query.filter(and_(CartItem.user_id == user_id, CartItem.delivered == 0)).all()
 
-    # Preprocess the cart items to consolidate similar items and calculate total prices
-    merged_items = defaultdict(int)
-    for item in cart_items:
-        merged_items[item.name] += item.quantity
+    cartData = [{
+        'quantity': item.quantity,
+        'name': item.name,
+        'price': item.price, 
+        'total_price': item.price * item.quantity
+    } for item in cart_items]
 
-    # Calculate total price for each item
-    for name, quantity in merged_items.items():
-        items = [i for i in cart_items if i.name == name]
-        merged_items[name] = {
-            'quantity': quantity,
-            'total_price': sum(item.price for item in items)
-        }
+    total_price = sum(item['total_price'] for item in cartData)
 
-    return render_template('barista.html', cartData=merged_items)
+    return render_template('barista.html', cartData=cartData, total_price=total_price)
 
 
 @app.route('/delivered', methods=['POST'])
@@ -449,7 +483,7 @@ def delivered():
     for cart_item in cart_items:
         cart_item.delivered = 1
         db.session.commit()
-    return jsonify({'msg': 'delivered'})
+    return jsonify({'status': 'success', 'message': 'Coffee delivered successfully'})
 
 @app.route('/location', methods=['GET'])
 @login_required
@@ -463,14 +497,23 @@ def location():
     for item in cart_items:
         merged_items[item.name] += item.quantity
 
-    # Calculate total price for each item
+    # Calculate total price for each item and include the price attribute
     for name, quantity in merged_items.items():
         items = [i for i in cart_items if i.name == name]
+        total_price = sum(item.price for item in items)
+        # Update the merged_items dictionary with a dictionary containing quantity and total_price
         merged_items[name] = {
             'quantity': quantity,
-            'total_price': sum(item.price for item in items)
+            'price': items[0].price,  # Assuming price is same for all items with the same name
+            'total_price': total_price
         }
-    return render_template('location.html',cartData=merged_items)
+
+    
+    # Calculate total price of all items
+    total_price_all_items = sum(item['total_price'] for item in merged_items.values())
+
+    return render_template('location.html', cartData=merged_items, total_price=total_price_all_items)
+
 
 '''
 ==========================================================
