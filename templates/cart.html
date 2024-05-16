@@ -75,15 +75,21 @@
             {% for item in cartData %}
             <tr>
               <td>{{ item.name }}</td>
-              <td>{{ item.quantity }}</td>
-              <td>₱{{ item.price }}</td>
+              <td>
+                <button onclick="updateQuantity('{{ item.id }}', 'decrement')" style="background-color: transparent; color: white; border: none; padding: 5px 10px; border-radius: 50%; font-weight: bold;">-</button>
+                <span id="quantity_{{ item.id }}">{{ item.quantity }}</span>
+                <button onclick="updateQuantity('{{ item.id }}', 'increment')" style="background-color: transparent; color: white; border: none; padding: 5px 10px; border-radius: 50%; font-weight: bold;">+</button>
+              </td>
+              <td>
+                <span id="price_{{ item.id }}">₱{{ item.price * item.quantity }}</span>
+            </td>            
               <td>      
                 <form action="/remove_from_cart/{{ item.id }}" method="POST">
                   <button type="submit" style="background-color: transparent; color: white; border: none; padding: 5px 10px; border-radius: 50%; font-weight: bold;">X</button>
                 </form>
               </td>
             </tr>
-            {% endfor %}
+            {% endfor %}                    
             <tr class="total-row">
               <td colspan="2" style="text-align: right;">Total: </td>
               <td id="totalPrice">₱{{ total_price }}</td>
@@ -106,6 +112,7 @@
             >
             Cash
           </div>
+
 <div id="gcashPayment" class="payment-option" style="height: 40px; display: block; color: black; background-image: url('{{ url_for('static', filename='assets/img/gcash-logo-vector.svg')}}'); background-size: cover; background-repeat: no-repeat; background-position: center;"
     onmouseover="this.style.backgroundColor='blue'; "
     onmouseout="this.style.backgroundColor='white';"
@@ -113,7 +120,6 @@
 >
     <!-- Content -->
 </div>
-
 
 
     </div>
@@ -158,6 +164,7 @@
     }
   }
 </script>
+
 <script>
   window.addEventListener('DOMContentLoaded', () => {
     const cartTable = document.getElementById('cartTable');
@@ -173,5 +180,61 @@
     totalRow.querySelector('#totalPrice').textContent = `₱${totalPrice.toFixed(2)}`;
   });
 </script>
+
+<script>
+function updateQuantity(itemId, action) {
+    const quantityElement = document.getElementById('quantity_' + itemId);
+    let quantity = parseInt(quantityElement.textContent);
+    
+    if (action === 'increment') {
+        quantity++;
+    } else if (action === 'decrement' && quantity > 1) {
+        quantity--;
+    }
+
+    // Update the displayed quantity
+    quantityElement.textContent = quantity;
+
+    // Send a POST request to update the quantity in the database
+    fetch(`/update_quantity/${itemId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ quantity: quantity })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to update quantity');
+        }
+        return response.json();
+    })
+    .then(data => {
+    // Update the price after receiving the updated price from the server
+    const priceElement = document.getElementById('price_' + itemId);
+    if (priceElement) { // Check if priceElement exists
+        priceElement.textContent = '₱' + data.price.toFixed(2);
+    } else {
+        console.error('Price element not found');
+    }
+
+    // Recalculate the total price
+    let totalPrice = 0;
+    const priceCells = document.querySelectorAll('tbody td:nth-child(3)');
+    priceCells.forEach(cell => {
+        const priceText = cell.textContent.trim();
+        const price = parseFloat(priceText.substring(1));
+        totalPrice += price;
+    });
+    document.getElementById('totalPrice').textContent = `₱${totalPrice.toFixed(2)}`;
+})
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+</script>
+
+
 
 {% endblock %}

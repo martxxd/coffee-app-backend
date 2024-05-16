@@ -21,7 +21,7 @@
 
 
 
-
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
   <link href="{{ url_for('static',filename='assets/img/favicon.png')}}" rel="icon">
   <link href="{{ url_for('static',filename='assets/img/apple-touch-icon.png')}}" rel="apple-touch-icon">
   <!--   <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet"> -->
@@ -116,9 +116,21 @@ a.close.disabled{pointer-events:none}
       <nav id="navbar" class="navbar">
         <ul>
           {% if 'logged_in' in session %}
-          <li><a class="nav-link {% if last_segment == 'myaccount' %}active{% endif %}" href="{{ url_for('myaccount') }}">My Account</a></li>
-          <li><a class="nav-link {% if last_segment == 'products' %}active{% endif %}" href="{{ url_for('product') }}">Product</a></li>
-          <li><a class="nav-link {% if last_segment == 'checkout' %}active{% endif %}" href="{{ url_for('checkout') }}">Checkout</a></li>
+          <li>
+            <a class="nav-link {% if last_segment == 'myaccount' %}active{% endif %}" href="{{ url_for('myaccount') }}">
+              <i class="fas fa-user" style="font-size: 2em;"></i> <!-- Font Awesome user icon with adjusted size -->
+            </a>
+        </li>
+        <li>
+            <a class="nav-link {% if last_segment == 'products' %}active{% endif %}" href="{{ url_for('product') }}">
+              <i class="fas fa-shopping-bag" style="font-size: 2em;"></i> <!-- Font Awesome shopping bag icon with adjusted size -->
+            </a>
+        </li>
+        <li>
+            <a class="nav-link {% if last_segment == 'checkout' %}active{% endif %}" href="{{ url_for('checkout') }}">
+              <i class="fas fa-shopping-cart" style="font-size: 2em;"></i> <!-- Font Awesome shopping cart icon with adjusted size -->
+            </a>
+        </li>        
           <li><a class="getstarted scrollto" id="logoutBtn" >Logout</a></li>
           {% else %}
           <li><a class="getstarted scrollto" href="{{ url_for('signin') }}" style="font-size: 20px;">Sign In</a></li>

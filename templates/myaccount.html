@@ -61,41 +61,41 @@
 
               </div>
 
+            <!-- Dropdowns for Province, City, and Barangay -->
+            <div class="col-lg-12 mt-3">
+                <label for="province" class="form-label" style="color:white">Province:</label>
+                <select id="province" class="form-select">
+                    {% for province in provinces %}
+                        {% if userDatas.province == province %}
+                            <option value="{{ province }}" selected>{{ province }}</option>
+                        {% else %}
+                            <option value="{{ province }}">{{ province }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+                                         
+            <div class="col-lg-12 mt-3">
+                <label for="city" class="form-label" style="color:white">City:</label>
+                <select id="city" class="form-select" data-selected="{{ userDatas[0].city }}">
+                    {% if userDatas[0].city %}
+                        <option value="{{ userDatas[0].city }}" selected>{{ userDatas[0].city }}</option>
+                    {% else %}
+                        <option value="" selected>Please select City</option>
+                    {% endif %}
+                </select>
+            </div>
+            <div class="col-lg-12 mt-3">
+                <label for="barangay" class="form-label" style="color:white">Barangay:</label>
+                <select id="barangay" class="form-select" data-selected="{{ userDatas[0].barangay }}">
+                    {% if userDatas[0].barangay %}
+                        <option value="{{ userDatas[0].barangay }}" selected>{{ userDatas[0].barangay }}</option>
+                    {% else %}
+                        <option value="" selected>Please select Barangay</option>
+                    {% endif %}
+                </select>
+            </div>
 
-           <!-- Dropdowns for Province, City, and Barangay -->
-           <div class="col-lg-12 mt-3">
-            <label for="province" class="form-label" style="color:white">Province:</label>
-            <select id="province" class="form-select">
-                {% if userDatas[0].province %}
-                    <option value="{{ userDatas[0].province }}" selected>{{ userDatas[0].province }}</option>
-                {% else %}
-                    <option value="" selected>Please select Province</option>
-                {% endif %}
-                <!-- Options will be populated dynamically -->
-            </select>
-        </div>
-        <div class="col-lg-12 mt-3">
-            <label for="city" class="form-label" style="color:white">City:</label>
-            <select id="city" class="form-select">
-                {% if userDatas[0].city %}
-                    <option value="{{ userDatas[0].city }}" selected>{{ userDatas[0].city }}</option>
-                {% else %}
-                    <option value="" selected>Please select City</option>
-                {% endif %}
-                <!-- Options will be populated dynamically -->
-            </select>
-        </div>
-        <div class="col-lg-12 mt-3">
-            <label for="barangay" class="form-label" style="color:white">Barangay:</label>
-            <select id="barangay" class="form-select">
-                {% if userDatas[0].barangay %}
-                    <option value="{{ userDatas[0].barangay }}" selected>{{ userDatas[0].barangay }}</option>
-                {% else %}
-                    <option value="" selected>Please select Barangay</option>
-                {% endif %}
-                <!-- Options will be populated dynamically -->
-            </select>
-        </div>
         
 
             <!-- Address textarea -->
@@ -107,7 +107,7 @@
 
             <!-- Save button centered (initially hidden) -->
             <div class="text-center mt-3" id="saveBtnContainer" style="display: none;">
-              <button type="submit"  class="btn btn-primary">Update Information</button>
+                <button id="saveBtn" type="submit" class="btn btn-primary">Update Information</button>
             </div>
           </div>
 
@@ -117,63 +117,78 @@
   </section><!-- End About Section -->
 
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Function to populate dropdowns based on selected code and endpoint
-        function populateDropdown(endpoint, code, dropdown, label) {
-            fetch(`https://psgc.gitlab.io/api/${endpoint}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Failed to fetch ${label}.`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    const dropdownElement = document.getElementById(dropdown);
-                    const selectedValue = dropdownElement.getAttribute('data-selected');
-                    
-                    // Check if the dropdown already has options or if there is a selected value
-                    if (dropdownElement.options.length === 0 && !selectedValue) {
-                        // Add default option "Please select" for all dropdowns
-                        const defaultOption = document.createElement('option');
-                        defaultOption.value = '';
-                        defaultOption.textContent = `Please select ${label}`;
-                        defaultOption.selected = true;
-                        dropdownElement.appendChild(defaultOption);
-                    }
-                    if (Array.isArray(data) && data.length > 0) {
-                        data.sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically
-                        data.forEach(item => {
-                            const option = document.createElement('option');
-                            option.value = item.code;
-                            option.textContent = item.name;
-                            if (selectedValue === item.name) {
-                                option.selected = true;
-                            }
-                            dropdownElement.appendChild(option);
-                        });
-                    } else {
-                        throw new Error(`Invalid response format for ${label}.`);
-                    }
-                })
-                .catch(error => console.error(`Error fetching ${label}:`, error));
-        }
+    <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Function to populate dropdowns based on selected code and endpoint
+                function populateDropdown(endpoint, dropdownId, label, selectedValue = '') {
+                    fetch(`https://psgc.gitlab.io/api/${endpoint}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            const dropdownElement = document.getElementById(dropdownId);
+                            dropdownElement.innerHTML = ''; // Clear current options
 
-        // Initialize province dropdown on page load
-        populateDropdown('provinces', '', 'province', 'provinces');
+                            if (selectedValue === '' || selectedValue === undefined) {
+                                const defaultOption = document.createElement('option');
+                                defaultOption.value = '';
+                                defaultOption.textContent = `Please select ${label}`;
+                                dropdownElement.appendChild(defaultOption);
+                            }
+
+                            if (Array.isArray(data) && data.length > 0) {
+                                data.sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically
+                                data.forEach(item => {
+                                    const option = document.createElement('option');
+                                    option.value = item.code;
+                                    option.textContent = item.name;
+                                    if (selectedValue === item.name) { // Check if the province name matches the selectedValue
+                                        option.selected = true; // If so, select this option
+                                    }
+                                    dropdownElement.appendChild(option);
+                                });
+                            } else {
+                                console.error(`Invalid response format for ${label}.`);
+                            }
+                        })
+                        .catch(error => console.error(`Error fetching ${label}:`, error));
+                }
+
+                // Initialize province dropdown on page load
+                const provinceSelect = document.getElementById('province');
+                const selectedProvince = "{{ userDatas[0].province }}"; // Get the province directly from the template
+
+                if (selectedProvince) { // If there's a selected province from the database
+                    populateDropdown('provinces', 'province', 'Province', selectedProvince); // Populate dropdown with selected province
+                } else { // Otherwise, populate with all provinces
+                    populateDropdown('provinces', 'province', 'Province');
+                }
 
         // Event listener for province selection
-        document.getElementById('province').addEventListener('change', function() {
+        provinceSelect.addEventListener('change', function() {
             const selectedProvinceCode = this.value;
-            populateDropdown(`provinces/${selectedProvinceCode}/cities-municipalities`, '', 'city', 'cities');
+            const citySelect = document.getElementById('city');
+            const barangaySelect = document.getElementById('barangay');
+            
+            citySelect.innerHTML = '<option value="">Please select City</option>'; // Reset city dropdown
+            barangaySelect.innerHTML = '<option value="">Please select Barangay</option>'; // Reset barangay dropdown
+
+            if (selectedProvinceCode) {
+                populateDropdown(`provinces/${selectedProvinceCode}/cities-municipalities`, 'city', 'City');
+            }
         });
 
         // Event listener for city/municipality selection
         document.getElementById('city').addEventListener('change', function() {
             const selectedCityCode = this.value;
-            populateDropdown(`cities/${selectedCityCode}/barangays`, '', 'barangay', 'barangays');
+            const barangaySelect = document.getElementById('barangay');
+            
+            barangaySelect.innerHTML = '<option value="">Please select Barangay</option>'; // Reset barangay dropdown
+
+            if (selectedCityCode) {
+                populateDropdown(`cities-municipalities/${selectedCityCode}/barangays`, 'barangay', 'Barangay');
+            }
         });
     });
+
 
 </script>
 

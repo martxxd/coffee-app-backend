@@ -36,26 +36,46 @@
 
     </div>
 
-<script>
-    function addToCart(productId) {
-        fetch(`/add_to_cart/${productId}`, {
-            method: 'POST',
+	
+<!-- HTML for the modal -->
+<div class="modal" id="cartModal">
+	<div class="modal-dialog modal-dialog-centered">
+	  <div class="modal-content">
+		<div class="modal-body text-center">
+		  <!-- Replace the icon with the GIF image -->
+		  <img src="/static/assets/img/shopping-cart.gif" style="width: 150px;">
+		  <p>Product added to cart!</p>
+		</div>
+	  </div>
+	</div>
+</div>
 
-        })
-        .then(response => {
-            if (response.ok) {
-                alert('Product added to cart!');
-            } else {
-                alert('Failed to add product to cart!');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
-    }
+<script>
+	function addToCart(productId) {
+		fetch(`/add_to_cart/${productId}`, {
+			method: 'POST',
+
+		})
+		.then(response => {
+			if (response.ok) {
+				// Show modal when product is added to cart
+				$('#cartModal').modal('show');
+				// Hide modal after 2 seconds
+				setTimeout(function() {
+					$('#cartModal').modal('hide');
+				}, 3000);
+			} else {
+				alert('Failed to add product to cart!');
+			}
+		})
+		.catch(error => {
+			console.error('Error:', error);
+		});
+	}
 </script>
 
-	<script>
+
+<script>
     document.addEventListener('DOMContentLoaded', function() {
         fetch('/categories')
             .then(response => response.json())
